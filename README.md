@@ -6,9 +6,9 @@ H \in \mathbb{R}_+^{I_2 x K}, Q \in \mathbb{R}_+^{I_3 x L} and a core tensor \ma
 where \times_i denotes the i-mode product.
 
 We will focus on the integration of:
-  - various metrics for the cost/objective functions used to evaluate the assess the quality of the NTD
+  - various metrics for the cost/objective function used to assess the quality of the NTD (data fitting term)
   - constraints such as normalization
   - penalty functions in the objective to promote specific solutions such as sparsity
-  - accleration schemes
+  - acceleration schemes
   
  
