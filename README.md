@@ -11,5 +11,4 @@ We will focus on the integration of:
   - penalty functions in the objective to promote specific solutions such as sparsity
   - acceleration schemes
   
- 
-![formula](https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1)
+
