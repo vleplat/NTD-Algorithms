@@ -17,7 +17,7 @@ with
 such that 
 ![\Large \mathcal{X}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{X}) ![\Large \approx](https://latex.codecogs.com/svg.latex?\Large&space;\approx) ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) ![\Large \times_1](https://latex.codecogs.com/svg.latex?\Large&space;\times_1) ![\Large W](https://latex.codecogs.com/svg.latex?\Large&space;W) ![\Large \times_2](https://latex.codecogs.com/svg.latex?\Large&space;\times_2) ![\Large H](https://latex.codecogs.com/svg.latex?\Large&space;H) ![\Large \times_3](https://latex.codecogs.com/svg.latex?\Large&space;\times_3) ![\Large Q](https://latex.codecogs.com/svg.latex?\Large&space;Q)
 
-where \times_i denotes the i-mode product.
+where ![\Large \times_i](https://latex.codecogs.com/svg.latex?\Large&space;\times_i) denotes the i-mode product.
 
 We will focus on the integration of:
   - various metrics for the cost/objective function used to assess the quality of the NTD (data fitting term)
