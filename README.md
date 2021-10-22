@@ -8,8 +8,9 @@ computing a NTD corresponds to look for three nonnegative factors
 ![\large \mathbb{R}_+^{I_1\times.J}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times.J}),
 ![\Large H\in](https://latex.codecogs.com/svg.latex?\Large&space;H\in) 
 ![\large \mathbb{R}_+^{I_2\times.K}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_2\times.K}),
-H \in \mathbb{R}_+^{I_2 \times K}, 
-Q \in \mathbb{R}_+^{I_3 \times L} and a core tensor 
+![\Large Q\in](https://latex.codecogs.com/svg.latex?\Large&space;Q\in) 
+![\large \mathbb{R}_+^{I_3\times.L}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_3\times.L}),
+and a core tensor 
 \mathscr{G} with \max{J,K,L} << \min{I_1,I_2,I_3} such that  
 \mathscr{X} \approx \mathscr{G} \times_1 W \times_2 H \times_3 Q
 where \times_i denotes the i-mode product.
