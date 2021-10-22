@@ -14,9 +14,7 @@ and a nonnegative core tensor
 ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) of dimension ![\small J](https://latex.codecogs.com/svg.latex?\small&space;J) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small K](https://latex.codecogs.com/svg.latex?\small&space;K) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small L](https://latex.codecogs.com/svg.latex?\small&space;L)
 with 
 ![\large \text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right)](https://latex.codecogs.com/svg.latex?\large&space;\text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right))
-\max{J,K,L} 
-<< 
-\min{I_1,I_2,I_3} such that  
+such that  
 \mathscr{X} \approx \mathscr{G} \times_1 W \times_2 H \times_3 Q
 where \times_i denotes the i-mode product.
 
