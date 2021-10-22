@@ -13,7 +13,7 @@ computing a NTD corresponds to look for three nonnegative factors
 and a nonnegative core tensor 
 ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) of dimension ![\small J](https://latex.codecogs.com/svg.latex?\small&space;J) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small K](https://latex.codecogs.com/svg.latex?\small&space;K) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small L](https://latex.codecogs.com/svg.latex?\small&space;L)
 with 
-![\large \text{max}\left(J,K,L\right)](https://latex.codecogs.com/svg.latex?\large&space;\text{max}\left(J,K,L\right))
+![\large \text{max}\left(J,K,L\right)\ll](https://latex.codecogs.com/svg.latex?\large&space;\text{max}\left(J,K,L\right)\ll)
 \max{J,K,L} 
 << 
 \min{I_1,I_2,I_3} such that  
