@@ -14,8 +14,9 @@ and a nonnegative core tensor
 ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) of dimension ![\small J](https://latex.codecogs.com/svg.latex?\small&space;J) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small K](https://latex.codecogs.com/svg.latex?\small&space;K) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small L](https://latex.codecogs.com/svg.latex?\small&space;L)
 with 
 ![\large \text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right)](https://latex.codecogs.com/svg.latex?\large&space;\text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right))
-such that  
-\mathscr{X} \approx \mathscr{G} \times_1 W \times_2 H \times_3 Q
+such that 
+![\Large \mathcal{X}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{X}) ![\Large \approx](https://latex.codecogs.com/svg.latex?\Large&space;\approx) ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) ![\Large \times_1](https://latex.codecogs.com/svg.latex?\Large&space;\times_1) ![\Large W](https://latex.codecogs.com/svg.latex?\Large&space;W) ![\Large \times_2](https://latex.codecogs.com/svg.latex?\Large&space;\times_2) ![\Large H](https://latex.codecogs.com/svg.latex?\Large&space;H) ![\Large \times_3](https://latex.codecogs.com/svg.latex?\Large&space;\times_3) ![\Large Q](https://latex.codecogs.com/svg.latex?\Large&space;Q)
+
 where \times_i denotes the i-mode product.
 
 We will focus on the integration of:
@@ -24,4 +25,4 @@ We will focus on the integration of:
   - penalty functions in the objective to promote specific solutions such as sparsity
   - acceleration schemes
   
-![\Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\Large&space;x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}) 
+
