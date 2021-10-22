@@ -5,8 +5,9 @@ input nonnegative Tensor ![\Large \mathcal{X}\in](https://latex.codecogs.com/svg
 In the particular case of a three-way tensor of dimension ![\small I_1](https://latex.codecogs.com/svg.latex?\small&space;I_1) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_2](https://latex.codecogs.com/svg.latex?\small&space;I_2) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_3](https://latex.codecogs.com/svg.latex?\small&space;I_3)
 computing a NTD corresponds to look for three nonnegative factors 
 ![\Large W\in](https://latex.codecogs.com/svg.latex?\Large&space;W\in) 
-![\large \mathbb{R}_+^{I_1\times.J}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times.J})
-W \in \mathbb{R}_+^{I_1 \times J},  
+![\large \mathbb{R}_+^{I_1\times.J}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times.J}),
+![\Large H\in](https://latex.codecogs.com/svg.latex?\Large&space;H\in) 
+![\large \mathbb{R}_+^{I_2\times.K}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_2\times.K}),
 H \in \mathbb{R}_+^{I_2 \times K}, 
 Q \in \mathbb{R}_+^{I_3 \times L} and a core tensor 
 \mathscr{G} with \max{J,K,L} << \min{I_1,I_2,I_3} such that  
