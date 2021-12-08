@@ -1,0 +1,145 @@
+%%% THEOREMS AND SECTIONS
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{property}{Property}
+\newtheorem{assumption}{Assumption}
+
+\newcommand{\norm}[1]{\left\lVert \, #1 \, \right\rVert}
+\newcommand{\abs}[1]{\left\lvert \, #1 \, \right\rvert}
+\newcommand{\KOp}[1]{\llbracket #1 \rrbracket} % kruskal operator
+
+\newcommand{\Kbar}{\overline{K}}
+
+
+%%% VECTORS
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\va}{\mathbf{a}}
+\newcommand{\vb}{\mathbf{b}}
+\newcommand{\vc}{\mathbf{c}}
+\newcommand{\ve}{\mathbf{e}}
+\newcommand{\vg}{\mathbf{g}}
+\newcommand{\vm}{\mathbf{m}}
+\newcommand{\vh}{\mathbf{h}}
+\newcommand{\vell}{\boldsymbol{\ell}}
+\newcommand{\vs}{\mathbf{s}} % fonction score
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vy}{\mathbf{y}}
+\newcommand{\vz}{\mathbf{z}}
+\newcommand{\valpha}{\boldsymbol{\alpha}}
+\newcommand{\vbeta}{\boldsymbol{\beta}}
+\newcommand{\vgamma}{\boldsymbol{\gamma}}
+\newcommand{\vepsilon}{\boldsymbol{\epsilon}}
+\newcommand{\vtheta}{\boldsymbol{\theta}}
+\newcommand{\vmu}{\boldsymbol{\mu}}
+\newcommand{\vdelta}{\boldsymbol{\delta}}
+
+%%% MATRICES
+\newcommand{\matr}[1]{\mathbf{#1}}
+\newcommand{\mA}{\matr{A}}
+\newcommand{\mB}{\matr{B}}
+\newcommand{\mC}{\matr{C}}
+\newcommand{\mD}{\matr{D}}
+\newcommand{\mF}{\matr{F}}
+\newcommand{\mH}{\matr{H}}
+\newcommand{\mI}{\matr{I}}
+\newcommand{\mJ}{\matr{J}}
+\newcommand{\mT}{\matr{T}}
+\newcommand{\mV}{\matr{V}}
+\newcommand{\mU}{\matr{U}}
+\newcommand{\mW}{\matr{W}}
+\newcommand{\mX}{\matr{X}}
+\newcommand{\mY}{\matr{Y}}
+\newcommand{\mZ}{\matr{Z}}
+\newcommand{\mM}{\matr{M}}
+\newcommand{\mS}{\matr{S}}
+\newcommand{\mLa}{\matr{\Lambda}}
+\newcommand{\mDelta}{\matr{\Delta}}
+\newcommand{\mSigma}{\matr{\Sigma}}
+\newcommand{\mId}{\matr{I}}
+\newcommand{\mP}{\matr{P}}
+
+
+%%% SYMBOLS
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\NL}{{\!N\!L}}
+\newcommand{\s}[1]{\mathcal{#1}}
+\newcommand{\T}{{\sf T}}        % transposition
+
+%%% OPERATORS
+\newcommand{\BKRP}[2]{\underset{#1\neq #2}{\mathlarger{\mathlarger{\odot}}}}
+\newcommand{\BHAD}[2]{\underset{#1\neq #2}{\mathlarger{\mathlarger{\circledast}}}}
+\newcommand{\BHADfull}[2]{\overset{#2}{\underset{#1}{\mathlarger{\mathlarger{\circledast}}}}}
+\newcommand{\eqdef}{\stackrel{\rm def}{=}}
+\renewcommand{\t}{{\sf T}} % transpose
+\newcommand{\pinv}{^\dagger}
+\newcommand{\E}[1]{{\rm E}\{#1\}}   % Esperance mathematique
+\newcommand{\kron}{\boxtimes}  % produit de Kronecker
+\newcommand{\hadam}{\boxdot}  % produit de Hadamard
+\newcommand{\out}{\otimes}  % produit tensoriel
+\newcommand{\tensp}{\otimes}  % produit tensoriel
+\newcommand{\con}{\bullet}   % Contraction
+\newcommand{\diag}[1]{\text{Diag}\left(#1\right)}   % Diag
+\makeatletter
+%\newcommand{\argmin}{\mathop{\operator@font argmin}}
+\newcommand{\argmin}{\mathop{\text{~argmin~}}}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\spann}{span}
+\DeclareMathOperator{\sparkn}{spark}
+\DeclareMathOperator{\rankn}{rank}
+\DeclareMathOperator{\prox}{prox}
+\DeclareMathOperator{\vecn}{vec}
+\DeclareMathOperator{\matrn}{matr}
+
+
+%%% TENSORS
+%\newcommand{\tens}[1]{\mbox{\usefont{T1}{cmr}{bx}{it} #1}}
+\newcommand{\tens}[1]{\boldsymbol{\mathcal{#1}}}
+\newcommand{\tG}{\tens{G}}
+\newcommand{\tI}{\tens{I}}
+\newcommand{\tT}{\tens{T}}
+\newcommand{\tX}{\tens{X}}
+\newcommand{\tY}{\tens{Y}}
+\newcommand{\tZ}{\tens{Z}}
+\newcommand{\tE}{\tens{E}}
+\newcommand{\tM}{\tens{M}}
+
+
+%%% COLORS
+\definecolor{gris}{gray}{0.90}
+\definecolor{gris25}{gray}{0.90}
+\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}
+\definecolor{bostonuniversityred}{rgb}{0.8, 0.0, 0.0}
+\definecolor{shamrockgreen}{rgb}{0.0, 0.62, 0.38}
+\definecolor{selectiveyellow}{rgb}{1.0, 0.73, 0.0}
+\definecolor{royalblue}{rgb}{0.25, 0.41, 0.88}
+\definecolor{ashgrey}{rgb}{0.7, 0.75, 0.71}
+\definecolor{burgundy}{RGB}{159,29,53}
+\definecolor{darkgreen}{RGB}{18,53,26}
+\definecolor{lightblue}{RGB}{102,217,255}
+\definecolor{fakeorange}{RGB}{255,140,102}
+\definecolor{arylideyellow}{rgb}{0.91, 0.84, 0.42}
+\definecolor{bananayellow}{rgb}{1.0, 0.88, 0.21}
+\definecolor{gris_f}{gray}{0.35}
+\definecolor{bordure}{rgb}{0.09,0.17,0.68}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{apricot}{rgb}{0.98, 0.81, 0.69}
+\definecolor{babyblue}{rgb}{0.54, 0.81, 0.94}
+\definecolor{uipoppy}{RGB}{225, 64, 5}
+\definecolor{uipaleblue}{RGB}{96,123,139}
+\definecolor{uiblack}{RGB}{0, 0, 0}
+\definecolor{decoda}{RGB}{0,153, 0}
+\definecolor{lightgreen}{rgb}{0.56, 0.93, 0.56}
+\definecolor{blue_f}{rgb}{0.2, 0.2, 0.6}
+\definecolor{cinnamon}{rgb}{0.82, 0.41, 0.12}
+\definecolor{darkpastelgreen}{rgb}{0.2, 0.75, 0.24}
+\definecolor{drab}{rgb}{0.59, 0.44, 0.09}
+
+% Circled Numbers
+\newcommand*\circled[1]{\tikz[baseline= (char.base) ]{
+            \node[shape=circle,fill=yellow!50,draw,inner sep=2pt] (char) {#1};}}

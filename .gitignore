@@ -1,3 +1,13 @@
 # Virtual environment
 venv/*
 *.egg-info/
+
+# latex
+*.aux
+*.bbl
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.blg
+*.log
