@@ -50,9 +50,11 @@ def APGD_factors(U, V, M, beta, epsilon):
     [2] D. Lee and H. S. Seung, Learning the parts of objects by non-negative
     matrix factorization., Nature, vol. 401, no. 6755, pp. 788–791, 1999.
     """
-    
-    L = tl.norm(V, 2)**2
-    #L = tl.norm(np.dot(V.transpose(),V))
+    # Faster but inaccurate L computation (over-approximation)
+    #L = tl.norm(V, 2)**2
+    # Slower but accurate L computation
+    u, s, vh = np.linalg.svd(V, full_matrices=False)
+    L = np.linalg.norm(s**2)
     K = np.dot(U,V)
     gradf_pos = np.dot(K,V.T)
     gradf_minus = np.dot(M,V.T)
@@ -62,7 +64,7 @@ def APGD_factors(U, V, M, beta, epsilon):
     
     return U
 
-def APGD_tensorial(G, factors, tensor, beta, epsilon, prod_factors):
+def APGD_tensorial(G, factors, tensor, beta, epsilon, sigma_factors):
     """
     This function is used to update the core G of a
     nonnegative Tucker Decomposition (NTD) [1] with Frobenius norm 
@@ -92,9 +94,11 @@ def APGD_tensorial(G, factors, tensor, beta, epsilon, prod_factors):
     [2] D. Lee and H. S. Seung, Learning the parts of objects by non-negative
     matrix factorization., Nature, vol. 401, no. 6755, pp. 788–791, 1999.
     """
-    # computation of Lipschitz constant for gradient
-    UtU=tl.tenalg.kronecker(prod_factors, skip_matrix=None, reverse=False)
-    L = np.linalg.norm(UtU,ord='fro')
+    # computation of Lipschitz constant for gradient - exact for Frob but slow - replace sigma_factors by prod_factors in inputs
+    # UtU=tl.tenalg.kronecker(prod_factors, skip_matrix=None, reverse=False)
+    # L = np.linalg.norm(UtU,ord='fro')
+    # computation of Lipschitz constant for gradient - inexact for Frob but fast and exact for l2 norm
+    L = np.prod(sigma_factors)
     
     K = tl.tenalg.multi_mode_dot(G,factors)
     L1 = K

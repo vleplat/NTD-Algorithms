@@ -337,17 +337,20 @@ def one_ntd_step_apgd_HER(tensor, ranks, in_core, in_factors, in_core_n, in_fact
     modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
     
     # Generating list of W.T*W, H.T*H, etc matrices for Lipschitz constant of gradient
-    prod_factors_y=[]
-
+    # prod_factors_y=[]
+    # Alternative way for computing Lipschitz constant of gradient - Property of Kronecker products
+    sigma_factors_y=[]
     # Compute the extrapolated update for the factors.
     # Note that when alpha is zero, factors_y = factors_n.
     for mode in modes_list:
         factors_n_up[mode] = apgd.APGD_factors(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, epsilon)
         factors_y[mode] = factors_n_up[mode]+alpha*(factors_n_up[mode]-in_factors_n[mode])
-        prod_factors_y.append(np.dot(factors_y[mode].T,factors_y[mode]))
+        # prod_factors_y.append(np.dot(factors_y[mode].T,factors_y[mode]))
+        u, s, vh = np.linalg.svd(factors_y[mode], full_matrices=False)
+        sigma_factors_y.append(s.max()**2);
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
-    core_n_up = apgd.APGD_tensorial(core_y, factors_y, tensor, beta, epsilon, prod_factors_y)
+    core_n_up = apgd.APGD_tensorial(core_y, factors_y, tensor, beta, epsilon, sigma_factors_y)
     core_y = core_n+alpha*(core_n-in_core_n)
 
     # Compute the value of the objective (loss) function at the

@@ -371,15 +371,15 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
 
         if verbose:
             if iteration == 0:
-                print('Normalized cost function value={}'.format(cost))
+                print('Initial Obj={}'.format(cost))
             else:
                 if cost_fct_vals[-2] - cost_fct_vals[-1] > 0:
-                    print('Normalized cost function value={}, variation={}.'.format(
-                            cost_fct_vals[-1], cost_fct_vals[-2] - cost_fct_vals[-1]))
+                    print('Iter={}|Obj={}| Var={}.'.format(iteration,
+                            cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2]))))
                 else:
                     # print in red when the reconstruction error is negative (shouldn't happen)
-                    print('\033[91m' + 'Normalized cost function value={}, variation={}.'.format(
-                            cost_fct_vals[-1], cost_fct_vals[-2] - cost_fct_vals[-1]) + '\033[0m')
+                    print('\033[91m' + 'Iter={}|Obj={}| Var={}.'.format(iteration,
+                            cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2]))) + '\033[0m')
 
         if iteration > 0 and abs(cost_fct_vals[-2] - cost_fct_vals[-1]) < tol:
             # Stop condition: relative error between last two iterations < tol
@@ -596,9 +596,9 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
             else:
                 raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
 
-    rec_error = norm_tensor ** 2 - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
-    cost_fct_val = (rec_error + sparsity_error) / (norm_tensor ** 2)
-
+    # rec_error = norm_tensor ** 2 - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
+    # cost_fct_val = (rec_error + sparsity_error) / (norm_tensor ** 2)
+    cost_fct_val = (beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), 2))
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
     #print("diff: " + str(rec_error - exhaustive_rec_error))
     #print("max" + str(np.amax(factors[2])))
