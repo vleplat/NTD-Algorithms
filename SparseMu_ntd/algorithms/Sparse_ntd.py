@@ -2,7 +2,7 @@
 """
 Created on Tue Jun 11 16:52:21 2019
 
-@author: amarmore
+@author: veplat, based on amarmoret code
 """
 
 import numpy as np
@@ -343,18 +343,7 @@ def one_sntd_step_mu(tensor, ranks, muWeight, in_core, in_factors, beta, norm_te
                 unfolded_core[idx_mat] = unfolded_core[idx_mat] / tl.norm(unfolded_core[idx_mat], 2)
         core = tl.fold(unfolded_core, mode_core_norm, core.shape)
 
-    # # Adding the l1 norm value to the reconstruction error
-    # sparsity_error = 0
-    # for index, sparse in enumerate(sparsity_coefficients):
-    #     if sparse:
-    #         if index < len(factors):
-    #             sparsity_error += 2 * (sparse * np.linalg.norm(factors[index], ord=1))
-    #         elif index == len(factors):
-    #             sparsity_error += 2 * (sparse * tl.norm(core, 1))
-    #         else:
-    #             raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
 
-    #clipped_tensor = np.maximum(tensor, 1e-12) # Necessary?
     reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
 
     cost_fct_val = beta_div.beta_divergence(tensor, reconstructed_tensor, beta)+muWeight[0]*tl.norm(core, order=1)

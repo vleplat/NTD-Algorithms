@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 16 14:45:25 2021
-@author: amarmore
-## Author : Axel Marmoret, based on Florian Voorwinden's code during its internship.
+Created on 2022
+@author: vleplat
+## Author : Valentin Leplat, based on Florian Voorwinden's code during its internship
+#           and Axel Marmoret during his PhD
 """
 
 import numpy as np
@@ -12,7 +13,7 @@ import mu_ntd.utils.errors as err
 
 def gamma(beta):
     """
-    Implements the exponent of Fevotte and Idier that guarantees the MU updates decrease the cost, in particular for beta outside [1,2].
+    Implements Sparse KL NTD (at the moment only for beta=1)
     """
     if beta<1:
         return 1/(2-beta)
@@ -30,10 +31,9 @@ def mu_betadivmin(U, V, M, beta, muWeight):
     [3] with the Multiplicative Update rule [2,3].
     M is m by n, U is m by r, V is r by n.
     All matrices are nonnegative componentwise.
-    Conversely than in [1], the NNLS problem is solved for the beta-divergence,
-    as studied in [3]:
-            min_{U >= 0} beta_div(M, UV)
-    The update rule of this algorithm is defined in [3].
+    We are interested in solving:
+            min_{U >= 0} beta_div(M, UV)+1/2 \mu \|U\|_F^2
+    The update rule of this algorithm is inspired by [3].
     Parameters
     ----------
     U : m-by-r array
@@ -44,10 +44,12 @@ def mu_betadivmin(U, V, M, beta, muWeight):
         The initial matrix, to approach.
     beta : Nonnegative float
         The beta coefficient for the beta-divergence.
+    muWeight : Positive scalar
+        The penalty weight
     Returns
     -------
     U: array
-        a m-by-r nonnegative matrix \approx argmin_{U >= 0} beta_div(M, UV)
+        a m-by-r nonnegative matrix \approx argmin_{U >= 0} beta_div(M, UV)+1/2 \mu \|U\|_F^2
     References
     ----------
     [1]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
@@ -88,9 +90,7 @@ def mu_tensorial(G, factors, tensor, beta, muWeight):
     """
     This function is used to update the core G of a
     nonnegative Tucker Decomposition (NTD) [1] with beta-divergence [3]
-    and Multiplicative Updates [2].
-    See ntd.py of this module for more details on the NTD (or [1])
-    TODO: expand this docstring.
+    and Multiplicative Updates [2] and sparsity penalty.
     Parameters
     ----------
     G : tensorly tensor
@@ -101,6 +101,8 @@ def mu_tensorial(G, factors, tensor, beta, muWeight):
         The tensor to estimate with NTD.
     beta : Nonnegative float
         The beta coefficient for the beta-divergence.
+    muWeight : Positive scalar
+        The penalty weight
     Returns
     -------
     G : tensorly tensor
