@@ -37,9 +37,9 @@ def mu_betadivmin(U, V, M, beta, muWeight):
     Parameters
     ----------
     U : m-by-r array
-        The first factor of the NNLS, the one which will be updated.
+        The first factor of factorization, the one which will be updated.
     V : r-by-n array
-        The second factor of the NNLS, which won't be updated.
+        The second factor of the factorization, which won't be updated.
     M : m-by-n array
         The initial matrix, to approach.
     beta : Nonnegative float
