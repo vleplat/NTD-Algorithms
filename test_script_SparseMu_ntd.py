@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # Solver parameters
     n_iter_max = 200
     beta = 1
-    muWeight = np.array([0.2, 0.15, 0.15, 0.15])  #\mu_g, \mu_W, \mu_H, \mu_Q
+    muWeight = np.array([0.2, 0.15, 0.15, 0.15])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Call of solvers
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -61,9 +61,9 @@ if __name__ == "__main__":
     print(f"MU, Beta = 1       : {cost_fct_vals[-1]}, converged in {len(cost_fct_vals) - 1} iterations.")
     print(f"MU - HER, Beta = 1 : {cost_fct_vals_HER[-1]}, converged in {len(cost_fct_vals_HER) - 1} iterations.")
     print("-----------------------------------------------------------------------")
-    print("Final relative loss function value:")
-    print(f"MU, Beta = 1       : {cost_fct_vals[-1]/tl.norm(T)**2*100} %")
-    print(f"MU - HER, Beta = 1 : {cost_fct_vals_HER[-1]/tl.norm(T)**2*100} %")
+    print("Final relative construction error:")
+    print(f"MU, Beta = 1       : {tl.norm(T-tl.tenalg.multi_mode_dot(core, factors))/tl.norm(T)*100} %")
+    print(f"MU - HER, Beta = 1 : {tl.norm(T-tl.tenalg.multi_mode_dot(core_HER, factors_HER))/tl.norm(T)*100} %")
     
     plt.figure(1)
     plt.plot(cost_fct_vals[4:-1], color='blue', label='MU HER off')
