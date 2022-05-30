@@ -18,8 +18,6 @@ import nn_fac.beta_divergence as beta_div
 
 import numpy as np
 
-import scipy.sparse as sci_sparse
-
 def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            sparsity_coefficients = [], fixed_modes = [], normalize = [], mode_core_norm = None,
            verbose=False, return_costs=False, deterministic=False):
