@@ -335,9 +335,11 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
         print("The core was asked NOT to be normalized, but mode_core_norm was set to a valid norm. Is this a mistake?")
     
     # initialisation - declare local varaibles
-    cost_fct_vals = []
+    # init error
+    reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
+    cost_fct_vals = [beta_div.beta_divergence(tensor, reconstructed_tensor, 2)]
     tic = time.time()
-    toc = []
+    toc = [0]
 
     # initialisation - unfold the tensor according to the modes
     #unfolded_tensors = []
@@ -582,7 +584,7 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
 
     #rec_error = norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
     reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
-    rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2)
+    rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2) #1/2 normF(Y-Yhat)**2
     cost_fct_val = (rec_error + sparsity_error) #/ norm_tensor
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
@@ -828,9 +830,10 @@ def compute_ntd_mu(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e
         print("The core was asked NOT to be normalized, but mode_core_norm was set to a valid norm. Is this a mistake?")
     
     # initialisation - declare local varaibles
-    cost_fct_vals = []
+    reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
+    cost_fct_vals = [beta_div.beta_divergence(tensor, reconstructed_tensor, 2)]
     tic = time.time()
-    toc = []
+    toc = [0]
 
     # initialisation - unfold the tensor according to the modes
     #unfolded_tensors = []

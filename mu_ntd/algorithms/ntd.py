@@ -252,7 +252,7 @@ def compute_ntd_apgd_HER(tensor_in, ranks, core_in, factors_in, n_iter_max=100,
     cost_fct_vals_fycn.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
     cost_fct_vals.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
     tic = time.time()
-    toc = []
+    toc = [0]
     alpha_store = []
     epsilon = 0   #1e-12
 

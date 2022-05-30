@@ -38,7 +38,8 @@ if __name__ == "__main__":
     core_0 = np.random.rand(ranks[0], ranks[1], ranks[2])
     
     # Solver parameters
-    n_iter_max = 200
+    n_iter_max = 1000
+    n_iter_max_hals = 100
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Call of solvers
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     core, factors, cost_fct_vals, toc = NTD.ntd_mu(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6, beta = 2,
                                                 sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
     # ### HALS as in nn_fac
-    core_HALS, factors_HALS, cost_fct_vals_HALS, toc_HALS = NTD.ntd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6,
+    core_HALS, factors_HALS, cost_fct_vals_HALS, toc_HALS = NTD.ntd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max_hals, tol = 1e-6,
                                                 sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
     
 
@@ -78,10 +79,10 @@ if __name__ == "__main__":
     print(f"HALS         : {cost_fct_vals_HALS[-1]/tl.norm(T)**2*100} %")
     
     plt.figure(1)
-    plt.plot(cost_fct_vals_HER_APGD[5:-1], color='black', label='APGD HER on')
-    plt.plot(cost_fct_vals_NoHER_APGD[5:-1], color='red', label='APGD HER off')
-    plt.plot(cost_fct_vals[5:-1], color='blue', label='MU')
-    plt.plot(cost_fct_vals_HALS[5:-1], color='orange', label='HALS')
+    plt.semilogy(cost_fct_vals_HER_APGD, color='black', label='APGD HER on')
+    plt.semilogy(cost_fct_vals_NoHER_APGD, color='red', label='APGD HER off')
+    plt.semilogy(cost_fct_vals, color='blue', label='MU')
+    plt.semilogy(cost_fct_vals_HALS, color='orange', label='HALS')
     plt.xlabel('Iteration number')
     plt.ylabel('Objective function')
     plt.title('Frobenius NTD')
@@ -89,10 +90,10 @@ if __name__ == "__main__":
     plt.show()
     
     plt.figure(2)
-    plt.plot(toc_NoHER_APGD[4:-1],cost_fct_vals_HER_APGD[5:-1], color='black', label='APGD HER on')
-    plt.plot(toc_HER_APGD[4:-1],cost_fct_vals_NoHER_APGD[5:-1], color='red', label='APGD HER off')
-    plt.plot(toc[4:-1],cost_fct_vals[4:-1], color='blue', label='MU')
-    plt.plot(toc_HALS[4:-1],cost_fct_vals_HALS[4:-1], color='orange', label='HALS')
+    plt.semilogy(toc_NoHER_APGD,cost_fct_vals_HER_APGD, color='black', label='APGD HER on')
+    plt.semilogy(toc_HER_APGD,cost_fct_vals_NoHER_APGD, color='red', label='APGD HER off')
+    plt.semilogy(toc,cost_fct_vals, color='blue', label='MU')
+    plt.semilogy(toc_HALS,cost_fct_vals_HALS, color='orange', label='HALS')
     plt.xlabel('CPU time')
     plt.ylabel('Objective function')
     plt.title('Frobenius NTD')
