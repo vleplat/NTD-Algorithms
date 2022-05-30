@@ -46,7 +46,10 @@ if __name__ == "__main__":
     core_HER_APGD, factors_HER_APGD, cost_fct_vals_HER_APGD, toc_HER_APGD, alpha_APGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = 2,
                                                 sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
                                                 verbose = True, return_costs = True, extrapolate=True)
-    
+
+   # ------------------ Axel's codes -------------- #
+   # Why not import nnfac?
+
     # ### Beta = 2 - MU no extrapolation
     core, factors, cost_fct_vals, toc = NTD.ntd_mu(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6, beta = 2,
                                                 sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
