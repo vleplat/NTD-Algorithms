@@ -11,3 +11,6 @@ venv/*
 *.synctex.gz
 *.blg
 *.log
+
+# python
+*.pyc
