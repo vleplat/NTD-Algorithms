@@ -50,7 +50,7 @@ if __name__ == "__main__":
     core_HER_APGD, factors_HER_APGD, cost_fct_vals_HER_APGD, toc_HER_APGD, alpha_APGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = np.copy(core_0), factors_0 = np.copy(factors_0), n_iter_max = n_iter_max, beta = 2, sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=True)
 
    # ------------------ Axel's codes -------------- #
-    # ### Beta = 2 - MU no extrapolation as in nn_fac
+    # ### Beta = 2 - MU no extrapolation as in nn_fac, one inner iter. (not useful)
     core, factors, cost_fct_vals, toc = NTD.ntd_mu(T, ranks, init = "custom", core_0 = np.copy(core_0), factors_0 = np.copy(factors_0), n_iter_max = n_iter_max, tol = 1e-6, beta = 2,
                                                 sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
     # ### HALS as in nn_fac; slower error computation for fairness --> change possible for MU with beta=2 but need to tinker with all code
