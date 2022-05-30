@@ -6,20 +6,15 @@ Created on Tue Jun 11 16:52:21 2019
 """
 
 import numpy as np
-import scipy
 import time
 import tensorly as tl
 from tensorly.decomposition import tucker as tl_tucker
-import math
 
-import SparseMu_ntd.utils.errors as err
-import SparseMu_ntd.algorithms.Sparse_mu_epsilon as mu
-
-import SparseMu_ntd.utils.beta_divergence as beta_div
+import mu_ntd.algorithms.Sparse_mu_epsilon as mu
+import mu_ntd.utils.errors as err
+import mu_ntd.utils.beta_divergence as beta_div
 
 import numpy as np
-
-import scipy.sparse as sci_sparse
 
 
 ######################### Temporary, to test mu and not break everything

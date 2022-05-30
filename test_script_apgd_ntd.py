@@ -10,7 +10,7 @@ import tensorly as tl
 # Some tweaks are needed with the error computation, and add extrapolation
 # run pip install -e . locally in nn_fac
 from nn_fac import ntd as NTD
-import apgd_ntd.algorithms.ntd as APGD
+import mu_ntd.algorithms.ntd as APGD
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":

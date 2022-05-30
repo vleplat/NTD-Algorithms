@@ -12,7 +12,7 @@ import tensorly as tl
 from tensorly.decomposition import tucker as tl_tucker
 import nn_fac.errors as err
 import nn_fac.beta_divergence as beta_div
-import apgd_ntd.algorithms.APGD_epsilon as apgd
+import mu_ntd.algorithms.APGD_epsilon as apgd
 
 import numpy as np
 
