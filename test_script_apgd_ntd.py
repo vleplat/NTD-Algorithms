@@ -5,10 +5,9 @@
 import numpy as np
 import tensorly as tl
 #import mu_ntd.algorithms.ntd as NTD
-# import tensorly instead, beta=2 MU NTD and HALS are implemented (but not with l1 + l2...)
-# Mu implementation is the old one (with epsilon clipping on the denominator instead of H>=epsilon)
-# I will mod the relevant code in tensorly if we need comparison with beta=2
-# for now, import nnfac 
+# import nnfac instead, beta=2 MU NTD and HALS are implemented (but not with l1 + l2...)
+# I will mod the relevant code in nnfac if we need comparison with beta=2
+# Some tweaks are needed with the error computation, and add extrapolation
 from nn_fac import ntd as NTD
 import apgd_ntd.algorithms.ntd as APGD
 import matplotlib.pyplot as plt

@@ -491,15 +491,15 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
         temp = tl.tenalg.multi_mode_dot(core, elemprod, skip=mode)
         # this line can be computed with tensor contractions
         con_modes = [i for i in range(tl.ndim(tensor)) if i != mode]
-        UtU = tl.tenalg.contract(temp, con_modes, core, con_modes)
-        #UtU = unfold(temp, mode)@tl.transpose(unfold(core, mode))
+        #UtU = tl.tenalg.contract(temp, con_modes, core, con_modes)
+        UtU = tl.unfold(temp, mode)@tl.transpose(tl.unfold(core, mode))
 
         # UtM
         # First, the contraction of data with other factors
         temp = tl.tenalg.multi_mode_dot(tensor, factors, skip=mode, transpose = True)
         # again, computable by tensor contractions
-        #MtU = unfold(temp, mode)@tl.transpose(unfold(core, mode))
-        MtU = tl.tenalg.contract(temp, con_modes, core, con_modes)
+        MtU = tl.unfold(temp, mode)@tl.transpose(tl.unfold(core, mode))
+        #MtU = tl.tenalg.contract(temp, con_modes, core, con_modes)
         UtM = tl.transpose(MtU)
 
 
