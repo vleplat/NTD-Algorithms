@@ -317,7 +317,7 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
     factors = factors_in.copy()
     tensor = tensor_in
 
-    norm_tensor = tl.norm(tensor, 2)
+    norm_tensor = tl.norm(tensor, 2)**2
 
     # set init if problem
     #TODO: set them as warnings
@@ -503,7 +503,7 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
         UtM = tl.transpose(MtU)
 
 
-        # Computing the Kronekcer product
+        # Computing the Kronecker product
         #kron = tl.tenalg.kronecker(factors, skip_matrix = mode, reverse = False)
         #kron_core = tl.dot(kron, tl.transpose(unfolded_core))
         #rhs = tl.dot(unfolded_tensors[mode], kron_core)
@@ -582,8 +582,8 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
             else:
                 raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
 
-    rec_error = norm_tensor ** 2 - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
-    cost_fct_val = (rec_error + sparsity_error) / (norm_tensor ** 2)
+    rec_error = norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
+    cost_fct_val = (rec_error + sparsity_error) / norm_tensor
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
     #print("diff: " + str(rec_error - exhaustive_rec_error))
@@ -810,8 +810,6 @@ def compute_ntd_mu(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e
     factors = factors_in.copy()
     tensor = tensor_in
 
-    norm_tensor = tl.norm(tensor, 2)
-
     # set init if problem
     #TODO: set them as warnings
     nb_modes = len(tensor.shape)
@@ -842,7 +840,7 @@ def compute_ntd_mu(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e
     # Iterate over one step of NTD
     for iteration in range(n_iter_max):
         # One pass of least squares on each updated mode
-        core, factors, cost = one_ntd_step_mu(tensor, ranks, core, factors, beta, norm_tensor,
+        core, factors, cost = one_ntd_step_mu(tensor, ranks, core, factors, beta,
                                               fixed_modes, normalize, mode_core_norm)
 
         # Store the computation time
@@ -873,7 +871,7 @@ def compute_ntd_mu(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e
     else:
         return core, factors
 
-def one_ntd_step_mu(tensor, ranks, in_core, in_factors, beta, norm_tensor,
+def one_ntd_step_mu(tensor, ranks, in_core, in_factors, beta,
                    fixed_modes, normalize, mode_core_norm):
     """
     One step of Multiplicative Uodate applied for every mode of the tensor
