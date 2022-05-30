@@ -97,13 +97,15 @@ def APGD_tensorial(G, factors, tensor, beta, epsilon, sigma_factors):
     # computation of Lipschitz constant for gradient - inexact for Frob but fast and exact for l2 norm
     L = np.prod(sigma_factors)
     
-    K = tl.tenalg.multi_mode_dot(G,factors)
-    L1 = K
-    L2 = np.ones(np.shape(K)) * tensor
-    gradf_minus = tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
-    gradf_pos = tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors])
+    #K = tl.tenalg.multi_mode_dot(G,factors)
+    #L1 = K
+    L1 = [fac.T@fac for fac in factors]
+    gradf_minus = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
+    #gradf_pos = tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors])
+    gradf_pos = tl.tenalg.multi_mode_dot(G, L1)
     gradf = (gradf_pos - gradf_minus)
     G = np.maximum(G-1/(L)*gradf,epsilon)
-    return G
+    # returning output, UtM, UtU
+    return G, gradf_minus, L1 
 
    

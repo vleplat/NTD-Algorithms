@@ -582,10 +582,10 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
             else:
                 raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
 
-    #rec_error = 1/2*(norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core))
+    rec_error = 1/2*(norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core))
     
-    reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
-    rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2) #1/2 normF(Y-Yhat)**2
+    #reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
+    #rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2) #1/2 normF(Y-Yhat)**2
     cost_fct_val = (rec_error + sparsity_error) #/ norm_tensor
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor

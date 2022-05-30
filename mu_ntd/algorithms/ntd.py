@@ -21,7 +21,7 @@ import numpy as np
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 def ntd_apgd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            sparsity_coefficients = [], fixed_modes = [], normalize = [], mode_core_norm = None, beta = 2,
-           verbose=False, return_costs=False, deterministic=False, extrapolate=False):
+           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-8):
     """
     ======================================
     Nonnegative Tucker Decomposition (NTD)
@@ -217,18 +217,18 @@ def ntd_apgd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_it
     return compute_ntd_apgd_HER(tensor, ranks, core, factors, n_iter_max=n_iter_max,
                    sparsity_coefficients = sparsity_coefficients, fixed_modes = fixed_modes,
                    normalize = normalize, mode_core_norm = mode_core_norm,
-                   verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic, extrapolate = extrapolate)
+                   verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic, extrapolate = extrapolate, epsilon=epsilon)
 
 def compute_ntd_apgd_HER(tensor_in, ranks, core_in, factors_in, n_iter_max=100,
            sparsity_coefficients = [], fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
-           verbose=False, return_costs=False, deterministic=False, extrapolate=False):
+           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-8):
 
     # initialisation - store the input varaibles
     core = core_in.copy()
     factors = factors_in.copy()
     tensor = tensor_in
 
-    norm_tensor = tl.norm(tensor, 2)
+    norm_tensor = tl.norm(tensor, 2) **2
 
     # set init if problem
     nb_modes = len(tensor.shape)
@@ -250,11 +250,10 @@ def compute_ntd_apgd_HER(tensor_in, ranks, core_in, factors_in, n_iter_max=100,
     cost_fct_vals = []     # value of the objective at the "best current" estimates
     cost_fct_vals_fycn=[]  # value of the objective at (factors_y, core_n)
     cost_fct_vals_fycn.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
-    cost_fct_vals.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
+    cost_fct_vals.append(cost_fct_vals_fycn[0])
     tic = time.time()
     toc = [0]
     alpha_store = []
-    epsilon = 0   #1e-12
 
     # the extrapolation parameters
     if extrapolate:
@@ -309,14 +308,14 @@ def compute_ntd_apgd_HER(tensor_in, ranks, core_in, factors_in, n_iter_max=100,
 def one_ntd_step_apgd_HER(tensor, ranks, in_core, in_factors, in_core_n, in_factors_n, in_core_y, in_factors_y, beta, norm_tensor,
                    fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals):
     # Copy
-    core = in_core.copy()
-    factors = in_factors.copy()
-    core_n = in_core_n.copy()
-    core_n_up = core_n.copy()
-    factors_n = in_factors_n.copy()
-    factors_n_up = factors_n.copy()
-    core_y = in_core_y.copy()
-    factors_y = in_factors_y.copy()
+    core = in_core#.copy()
+    factors = in_factors#.copy()
+    core_n = in_core_n#.copy()
+    core_n_up = core_n#.copy()
+    factors_n = in_factors_n#.copy()
+    factors_n_up = factors_n#.copy()
+    core_y = in_core_y#.copy()
+    factors_y = in_factors_y#.copy()
 
     cost_fct_val = cost_fct_vals[-1]
 
@@ -341,13 +340,17 @@ def one_ntd_step_apgd_HER(tensor, ranks, in_core, in_factors, in_core_n, in_fact
         sigma_factors_y.append(s.max()**2);
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
-    core_n_up = apgd.APGD_tensorial(core_y, factors_y, tensor, beta, epsilon, sigma_factors_y)
-    core_y = core_n+alpha*(core_n-in_core_n)
+    core_n_up, UytM, UytUy = apgd.APGD_tensorial(core_y, factors_y, tensor, beta, epsilon, sigma_factors_y)
+    core_y = core_n_up+alpha*(core_n_up-in_core_n)
 
     # Compute the value of the objective (loss) function at the
     # extrapolated solution for the factors (factors_y) and the
     # non-extrapolated solution for the core (core_n).
-    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n, factors_y), beta)
+    
+    #TODO: This is done because we reuse computations from earlier. If not the case, use real error
+    cost_fycn = 1/2*(norm_tensor - 2*tl.tenalg.inner(UytM, core_n_up) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core_n_up, UytUy, transpose = False), core_n_up))
+    #cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n, factors_y), beta)
+    #cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n, factors_n), beta)
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
