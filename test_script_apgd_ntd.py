@@ -4,7 +4,12 @@
 # Python classics
 import numpy as np
 import tensorly as tl
-import mu_ntd.algorithms.ntd as NTD
+#import mu_ntd.algorithms.ntd as NTD
+# import tensorly instead, beta=2 MU NTD and HALS are implemented (but not with l1 + l2...)
+# Mu implementation is the old one (with epsilon clipping on the denominator instead of H>=epsilon)
+# I will mod the relevant code in tensorly if we need comparison with beta=2
+# for now, import nnfac 
+from nn_fac import ntd as NTD
 import apgd_ntd.algorithms.ntd as APGD
 import matplotlib.pyplot as plt
 
@@ -38,26 +43,20 @@ if __name__ == "__main__":
     # Call of solvers
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # ### APGD No HER
-    core_NoHER_APGD, factors_NoHER_APGD, cost_fct_vals_NoHER_APGD, toc_NoHER_APGD, alpha_NoHerAPGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = 2,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True, extrapolate=False)
+    core_NoHER_APGD, factors_NoHER_APGD, cost_fct_vals_NoHER_APGD, toc_NoHER_APGD, alpha_NoHerAPGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = 2, sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=False)
     
     # ### APGD HER
-    core_HER_APGD, factors_HER_APGD, cost_fct_vals_HER_APGD, toc_HER_APGD, alpha_APGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = 2,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True, extrapolate=True)
+    core_HER_APGD, factors_HER_APGD, cost_fct_vals_HER_APGD, toc_HER_APGD, alpha_APGD = APGD.ntd_apgd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = 2, sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=True)
 
    # ------------------ Axel's codes -------------- #
-   # Why not import nnfac?
+   # Why not import nnfac or tensorly?
 
-    # ### Beta = 2 - MU no extrapolation
+    # ### Beta = 2 - MU no extrapolation as in nn_fac
     core, factors, cost_fct_vals, toc = NTD.ntd_mu(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6, beta = 2,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True, extrapolate=False)
-    # ### HALS
+                                                sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
+    # ### HALS as in nn_fac
     core_HALS, factors_HALS, cost_fct_vals_HALS, toc_HALS = NTD.ntd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True)
+                                                sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
     
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Reporting
