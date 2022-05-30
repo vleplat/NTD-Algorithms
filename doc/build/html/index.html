@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Welcome to mu-NTD documentation! &#8212; mu-ntd package documentation</title>
     
-  <link href="_static/css/theme.css" rel="stylesheet">
-  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,21 +20,17 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     
-      
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
-    
-    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
-
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,7 +40,21 @@
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -51,9 +63,10 @@
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="#">
       
       
@@ -68,99 +81,160 @@
     <div class="bd-toc-item active">
         
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/index.rst.txt"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.rst</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/todo"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-        </div>
-
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
             </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+<a href="https://github.com/todo"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="bottom"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/index.rst.txt"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.rst</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
    Welcome to mu-NTD documentation!
   </a>
   <ul class="visible nav section-nav flex-column">
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#module-mu_ntd.algorithms">
+    <a class="reference internal nav-link" href="#module-mu_ntd.algorithms.ntd">
      Documentation for algorithms
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#module-mu_ntd.scripts">
+    <a class="reference internal nav-link" href="#documentation-for-useful-scripts">
      Documentation for useful scripts
     </a>
    </li>
@@ -173,58 +247,906 @@
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Welcome to mu-NTD documentation!</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Welcome to mu-NTD documentation!
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#module-mu_ntd.algorithms.ntd">
+     Documentation for algorithms
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#documentation-for-useful-scripts">
+     Documentation for useful scripts
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#internal-links">
+   Internal links
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="section" id="welcome-to-mu-ntd-documentation">
-<h1>Welcome to mu-NTD documentation!<a class="headerlink" href="#welcome-to-mu-ntd-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-mu_ntd.algorithms">
-<span id="documentation-for-algorithms"></span><h2>Documentation for algorithms<a class="headerlink" href="#module-mu_ntd.algorithms" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-mu_ntd.scripts">
-<span id="documentation-for-useful-scripts"></span><h2>Documentation for useful scripts<a class="headerlink" href="#module-mu_ntd.scripts" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
-<div class="section" id="internal-links">
-<h1>Internal links<a class="headerlink" href="#internal-links" title="Permalink to this headline">¶</a></h1>
+  <section id="welcome-to-mu-ntd-documentation">
+<h1>Welcome to mu-NTD documentation!<a class="headerlink" href="#welcome-to-mu-ntd-documentation" title="Permalink to this headline">#</a></h1>
+<section id="module-mu_ntd.algorithms.ntd">
+<span id="documentation-for-algorithms"></span><h2>Documentation for algorithms<a class="headerlink" href="#module-mu_ntd.algorithms.ntd" title="Permalink to this headline">#</a></h2>
+<p>Created on Tue Jun 11 16:52:21 2019</p>
+<p>&#64;author: amarmore</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.ntd.compute_ntd">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.ntd.</span></span><span class="sig-name descname"><span class="pre">compute_ntd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_core_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_costs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.ntd.compute_ntd" title="Permalink to this definition">#</a></dt>
+<dd><p>Computation of a Nonnegative Tucker Decomposition [1]
+via hierarchical alternating least squares (HALS) [2],
+with factors_in as initialization.</p>
+<p>Tensors are manipulated with the tensorly toolbox [3].</p>
+<p>In tensorly and in our convention, tensors are unfolded and treated as described in [4].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor_in</strong> (<em>tensorly tensor</em>) – The tensor T, which is factorized</p></li>
+<li><p><strong>rank</strong> (<em>integer</em>) – The rank of the decomposition</p></li>
+<li><p><strong>core_in</strong> (<em>tensorly tensor</em>) – The initial core</p></li>
+<li><p><strong>factors_in</strong> (<em>list of array of nonnegative floats</em>) – The initial factors</p></li>
+<li><p><strong>n_iter_max</strong> (<em>integer</em>) – The maximal number of iteration before stopping the algorithm
+Default: 100</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Threshold on the improvement in objective function value.
+Between two iterations, if the difference between
+both objective function values is below this threshold, the algorithm stops.
+Default: 1e-8</p></li>
+<li><p><strong>sparsity_coefficients</strong> (<em>list of float</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – The sparsity coefficients on each factor and on the core respectively.
+If set to None or [], the algorithm is computed without sparsity
+Default: []</p></li>
+<li><p><strong>fixed_modes</strong> (<em>list of integers</em><em> (</em><em>between 0 and the number of modes + 1 for the core</em><em>)</em>) – Has to be set not to update a factor, taken in the order of modes and lastly on the core.
+Default: []</p></li>
+<li><p><strong>normalize</strong> (<em>list of boolean</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – Indicates whether the factors need to be normalized or not.
+The normalization is a l_2 normalization on each of the rank components
+(For the factors, each column will be normalized, ie each atom of the dimension of the current rank).
+Default: []</p></li>
+<li><p><strong>mode_core_norm</strong> (<em>integer</em><em> or </em><em>None</em>) – The mode on which normalize the core, or None if normalization shouldn’t be enforced.
+Will only be useful if the last element of the previous “normalise” argument is set to True.
+Indexes of the modes start at 0.
+Default: None</p></li>
+<li><p><strong>hals</strong> (<em>boolean</em>) – Whether to run hals (true) or gradient (false) update on the core.
+Default (and recommanded): false</p></li>
+<li><p><strong>verbose</strong> (<em>boolean</em>) – Indicates whether the algorithm prints the monitoring of the convergence
+or not
+Default: False</p></li>
+<li><p><strong>return_costs</strong> (<em>boolean</em>) – Indicates whether the algorithm should return all objective function
+values and computation time of each iteration or not
+Default: False</p></li>
+<li><p><strong>deterministic</strong> – Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation.
+This is made to enhance reproducible research.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>core</strong> (<em>tensorly tensor</em>) – The core tensor linking the factors of the decomposition</p></li>
+<li><p><strong>factors</strong> (<em>numpy #TODO: For tensorly pulling, replace numpy by backend</em>) – An array containing all the factors computed with the NTD</p></li>
+<li><p><strong>cost_fct_vals</strong> (<em>list</em>) – A list of the objective function values, for every iteration of the algorithm.</p></li>
+<li><p><strong>toc</strong> (<em>list, only if return_errors == True</em>) – A list with accumulated time at each iterations</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Tamara G Kolda and Brett W Bader. “Tensor decompositions and applications”,
+SIAM review 51.3 (2009), pp. 455{500.</p>
+<p>[2]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[3] J. Kossai et al. “TensorLy: Tensor Learning in Python”,
+arxiv preprint (2018)</p>
+<p>[4] Jeremy E Cohen. “About notations in multiway array processing”,
+arXiv preprint arXiv:1511.01306, (2015).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.ntd.ntd">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.ntd.</span></span><span class="sig-name descname"><span class="pre">ntd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_core_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_costs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.ntd.ntd" title="Permalink to this definition">#</a></dt>
+<dd><p>Factorization of a tensor T in nonnegative matrices,
+linked by a nonnegative core tensor, of dimensions equal to the ranks
+(in general smaller than the tensor).
+See more details about the NTD in [1].</p>
+<dl class="simple">
+<dt>For example, in the third-order case, resolution of:</dt><dd><p>T pprox (W otimes H otimes Q) G</p>
+</dd>
+</dl>
+<p>In this example, W, H and Q are the factors, one per mode, and G is the core tensor.
+W is of size T.shape[0] * ranks[0],
+H is of size T.shape[1] * ranks[1],
+Q is of size T.shape[2] * ranks[2],
+G is of size ranks[0] * ranks[1] * ranks[2].</p>
+<p>More precisely, the chosen optimization algorithm is the HALS [2] for the factors,
+which updates each factor columnwise, fixing every other columns,
+and a projected gradient for the core,
+which reduces the memory neccesited to perfome HALS on the core.
+The projected gradient rule is derived by the authors, and doesn’t appear in citation for now.</p>
+<p>Tensors are manipulated with the tensorly toolbox [3].</p>
+<p>In tensorly and in our convention, tensors are unfolded and treated as described in [4].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>tensorly tensor</em>) – The nonnegative tensor T, to factorize</p></li>
+<li><p><strong>ranks</strong> (<em>list of integers</em>) – The ranks for each factor of the decomposition</p></li>
+<li><p><strong>init</strong> (<em>&quot;random&quot;</em><em> | </em><em>&quot;tucker&quot;</em><em> | </em><em>&quot;custom&quot;</em><em> |</em>) – <ul>
+<li><dl class="simple">
+<dt>If set to random:</dt><dd><p>Initializes with random factors of the correct size.
+The randomization is the uniform distribution in [0,1),
+which is the default from numpy random.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to tucker:</dt><dd><p>Resolve a tucker decomposition of the tensor T (by HOSVD) and
+initializes the factors and the core as this resolution, clipped to be nonnegative.
+The tucker decomposition is performed with tensorly [3].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to “chromas”:</dt><dd><p>Resolve a tucker decomposition of the tensor T (by HOSVD) and
+initializes the factors and the core as this resolution, clipped to be nonnegative.
+The tucker decomposition is performed with tensorly [3].
+Contrary to “tucker” init, the first factor will then be set to the 12-size identity matrix,
+because it’s a decomposition model specific for modeling music expressed in chromas.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to custom:</dt><dd><p>core_0 and factors_0 (see below) will be used for the initialization</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Default: random</p>
+</p></li>
+<li><p><strong>core_0</strong> (<em>None</em><em> or </em><em>tensor of nonnegative floats</em>) – A custom initialization of the core, used only in “custom” init mode.
+Default: None</p></li>
+<li><p><strong>factors_0</strong> (<em>None</em><em> or </em><em>list of array of nonnegative floats</em>) – A custom initialization of the factors, used only in “custom” init mode.
+Default: None</p></li>
+<li><p><strong>n_iter_max</strong> (<em>integer</em>) – The maximal number of iteration before stopping the algorithm
+Default: 100</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Threshold on the improvement in objective function value.
+Between two succesive iterations, if the difference between
+both objective function values is below this threshold, the algorithm stops.
+Default: 1e-6</p></li>
+<li><p><strong>sparsity_coefficients</strong> (<em>list of float</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – The sparsity coefficients on each factor and on the core respectively.
+If set to None or [], the algorithm is computed without sparsity
+Default: []</p></li>
+<li><p><strong>fixed_modes</strong> (<em>list of integers</em><em> (</em><em>between 0 and the number of modes + 1 for the core</em><em>)</em>) – Has to be set not to update a factor, taken in the order of modes and lastly on the core.
+Default: []</p></li>
+<li><p><strong>normalize</strong> (<em>list of boolean</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – Indicates whether the factors need to be normalized or not.
+The normalization is a l_2 normalization on each of the rank components
+(For the factors, each column will be normalized, ie each atom of the dimension of the current rank).
+Default: []</p></li>
+<li><p><strong>mode_core_norm</strong> (<em>integer</em><em> or </em><em>None</em>) – The mode on which normalize the core, or None if normalization shouldn’t be enforced.
+Will only be useful if the last element of the previous “normalise” argument is set to True.
+Indexes of the modes start at 0.
+Default: None</p></li>
+<li><p><strong>hals</strong> (<em>boolean</em>) – Whether to run hals (true) or gradient (false) update on the core.
+Default (and recommanded): false</p></li>
+<li><p><strong>verbose</strong> (<em>boolean</em>) – Indicates whether the algorithm prints the monitoring of the convergence
+or not
+Default: False</p></li>
+<li><p><strong>return_costs</strong> (<em>boolean</em>) – Indicates whether the algorithm should return all objective function
+values and computation time of each iteration or not
+Default: False</p></li>
+<li><p><strong>deterministic</strong> – Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation,
+and optimization techniques in the NNLS, function of the runtime.
+This is made to enhance reproducible research, and should be set to True for computation of results.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>core</strong> (<em>tensorly tensor</em>) – The core tensor linking the factors of the decomposition</p></li>
+<li><p><strong>factors</strong> (<em>numpy #TODO: For tensorly pulling, replace numpy by backend</em>) – An array containing all the factors computed with the NTD</p></li>
+<li><p><strong>cost_fct_vals</strong> (<em>list</em>) – A list of the objective function values, for every iteration of the algorithm.</p></li>
+<li><p><strong>toc</strong> (<em>list, only if return_errors == True</em>) – A list with accumulated time at each iterations</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>tensor = np.random.rand(80,100,120)
+ranks = [10,20,15]
+core, factors = NTD.ntd(tensor, ranks = ranks, init = “tucker”, verbose = True, hals = False,</p>
+<blockquote>
+<div><p>sparsity_coefficients = [None, None, None, None], normalize = [True, True, False, True])</p>
+</div></blockquote>
+<p class="rubric">References</p>
+<p>[1] Tamara G Kolda and Brett W Bader. “Tensor decompositions and applications”,
+SIAM review 51.3 (2009), pp. 455{500.</p>
+<p>[2]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[3] J. Kossai et al. “TensorLy: Tensor Learning in Python”,
+arxiv preprint (2018)</p>
+<p>[4] Jeremy E Cohen. “About notations in multiway array processing”,
+arXiv preprint arXiv:1511.01306, (2015).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.ntd.one_ntd_step">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.ntd.</span></span><span class="sig-name descname"><span class="pre">one_ntd_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_core</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_core_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.ntd.one_ntd_step" title="Permalink to this definition">#</a></dt>
+<dd><p>One pass of Hierarchical Alternating Least Squares update along all modes,
+and hals or gradient update on the core (depends on hals parameter),
+which decreases reconstruction error in Nonnegative Tucker Decomposition.</p>
+<p>Update the factors by solving a least squares problem per mode, as described in [1].</p>
+<p>Note that the unfolding order is the one described in [2], which is different from [1].</p>
+<p>This function is strictly superior to a least squares solver ran on the
+matricized problems min_X ||Y - AX||_F^2 since A is structured as a
+Kronecker product of the other factors/core.</p>
+<p>Tensors are manipulated with the tensorly toolbox [3].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unfolded_tensors</strong> (<em>list of array</em>) – The spectrogram tensor, unfolded according to all its modes.</p></li>
+<li><p><strong>ranks</strong> (<em>list of integers</em>) – Ranks for eac factor of the decomposition.</p></li>
+<li><p><strong>in_core</strong> (<em>tensorly tensor</em>) – Current estimates of the core</p></li>
+<li><p><strong>in_factors</strong> (<em>list of array</em>) – Current estimates for the factors of this NTD.
+The value of factor[update_mode] will be updated using a least squares update.
+The values in in_factors are not modified.</p></li>
+<li><p><strong>norm_tensor</strong> (<em>float</em>) – The Frobenius norm of the input tensor</p></li>
+<li><p><strong>sparsity_coefficients</strong> (<em>list of float</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – The sparsity coefficients on each factor and on the core respectively.</p></li>
+<li><p><strong>fixed_modes</strong> (<em>list of integers</em><em> (</em><em>between 0 and the number of modes + 1 for the core</em><em>)</em>) – Has to be set not to update a factor, taken in the order of modes and lastly on the core.</p></li>
+<li><p><strong>normalize</strong> (<em>list of boolean</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – A boolean whereas the factors need to be normalized.
+The normalization is a l_2 normalization on each of the rank components
+(For the factors, each column will be normalized, ie each atom of the dimension of the current rank).</p></li>
+<li><p><strong>mode_core_norm</strong> (<em>integer</em><em> or </em><em>None</em>) – The mode on which normalize the core, or None if normalization shouldn’t be enforced.
+Will only be useful if the last element of the previous “normalise” argument is set to True.
+Indexes of the modes start at 0.
+Default: None</p></li>
+<li><p><strong>hals</strong> (<em>boolean</em>) – Whether to run hals (true) or gradient (false) update on the core.
+Default (and recommanded): false</p></li>
+<li><p><strong>alpha</strong> (<em>positive float</em>) – Ratio between outer computations and inner loops. Typically set to 0.5 or 1.
+Set to +inf in the deterministic mode, as it depends on runtime.
+Default: 0.5</p></li>
+<li><p><strong>delta</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – Early stop criterion, while err_k &gt; delta*err_0. Set small for
+almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
+of a NTD computation.
+Default: 0.01</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>core</strong> (<em>tensorly tensor</em>) – The core tensor linking the factors of the decomposition</p></li>
+<li><p><strong>factors</strong> (<em>list of factors</em>) – An array containing all the factors computed with the NTD</p></li>
+<li><p><em>cost_fct_val</em> – The value of the objective function at this step,
+normalized by the squared norm of the original tensor.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Tamara G Kolda and Brett W Bader. “Tensor decompositions and applications”,
+SIAM review 51.3 (2009), pp. 455{500.</p>
+<p>[2] Jeremy E Cohen. “About notations in multiway array processing”,
+arXiv preprint arXiv:1511.01306, (2015).</p>
+<p>[3] J. Kossai et al. “TensorLy: Tensor Learning in Python”,
+arxiv preprint (2018)</p>
+</dd></dl>
+
+<span class="target" id="module-mu_ntd.algorithms.nnls"></span><p>Created on Fri Jun  7 16:40:44 2019</p>
+<p>&#64;author: amarmore</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.BETA_hals_sparse_nnls_acc">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">BETA_hals_sparse_nnls_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">UtM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UtU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.BETA_hals_sparse_nnls_acc" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes an approximate solution of a nonnegative least
+squares problem (NNLS) with an exact block-coordinate descent scheme. M is m by n, U is m by r,
+and a sparsity coefficient.</p>
+<p>If sparsity is set to “penalty”, this algorithm solves:</p>
+<blockquote>
+<div><blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2 + 2*sparsity_coefficient*(sumlimits_{j = 0}^{r}||V[k,:]||_1)</p>
+</div></blockquote>
+<p>NB: 2*sp for uniformization in the derivative</p>
+</div></blockquote>
+<p>else, if sparsity is set to “hard”, this algorithm solves:</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2</p>
+<p>and keeps only the {sparsity_coefficient} highest factors.</p>
+<p>!! For that reason, {sparsity_coefficient} needs to be a nonzero integer here.</p>
+<p>If {sparsity_coefficient} is positive, it computes the sparsity on the lines of the V matrix,</p>
+</div></blockquote>
+<p>else, if sparsity is set to “power”, this algorithm solves:</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2</p>
+<p>and keeps only the highest factors such that ||V_sparse||_2 &gt; {sparsity_coefficient}/100 * ||V||_2</p>
+<p>If {sparsity_coefficient} is positive, it computes the sparsity on the lines of the V matrix,</p>
+</div></blockquote>
+<p>This accelerated function, defined in [1], is made for being used repetively inside an
+outer-loop alternating algorithm, for instance for computing nonnegative
+matrix Factorization or tensor factorization.</p>
+<p>It features two accelerations: an early stop stopping criterion, and a
+complexity averaging between precomputations and loops, so as to use large
+precomputations several times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>UtM</strong> (<em>r-by-n array</em>) – Pre-computed product of the transposed of U and M, used in the update rule</p></li>
+<li><p><strong>UtU</strong> (<em>r-by-r array</em>) – Pre-computed product of the transposed of U and U, used in the update rule</p></li>
+<li><p><strong>in_V</strong> (<em>r-by-n initialization matrix</em><em> (</em><em>mutable</em><em>)</em>) – Initialized V array
+By default, is initialized with one non-zero entry per column
+corresponding to the closest column of U of the corresponding column of M.</p></li>
+<li><p><strong>sparsity</strong> (<em>string</em>) – <dl class="simple">
+<dt>the sparsity method:</dt><dd><p>”penalty” for a sparsity with a penalty coefficient in the objective function,
+“hard” for a hard sparsity where only the highest coefficient are kept</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>sparsity_coefficient</strong> (<em>float</em>) – <dl>
+<dt>the sparsity coefficient, related to the kind of sparsity:</dt><dd><p>if “penalty”, it will be the coefficient in the objective function (see above)
+if “hard”, it will be the number of coefficient to keep</p>
+<blockquote>
+<div><p>on columns if &gt; 0
+on rows if &lt; 0</p>
+</div></blockquote>
+<dl class="simple">
+<dt>if “power”, it will be the thresholding percentage of the l2 norm (see above)</dt><dd><p>on columns if &gt; 0
+on rows if &lt; 0</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>maxiter</strong> (<em>Postivie integer</em>) – Upper bound on the number of iterations
+Default: 500</p></li>
+<li><p><strong>atime</strong> (<em>Positive float</em>) – Time taken to do the precomputations UtU and UtM
+Default: None</p></li>
+<li><p><strong>alpha</strong> (<em>Positive float</em>) – Ratio between outer computations and inner loops, typically set to 0.5 or 1.
+Default: 0.5</p></li>
+<li><p><strong>delta</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – early stop criterion, while err_k &gt; delta*err_0. Set small for
+almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
+of a PARAFAC computation.
+Default: 0.01</p></li>
+<li><p><strong>normalize</strong> (<em>boolean</em>) – True in order to normalize each of the k-th line of V after the update
+False not to update them
+Default: False</p></li>
+<li><p><strong>nonzero</strong> (<em>boolean</em>) – True if the lines of the V matrix can’t be zero,
+False if they can be zero
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>V</strong> (<em>array</em>) – a r-by-n nonnegative matrix pprox argmin_{V &gt;= 0} ||M-UV||_F^2 + mu * ||V - Vtarget||_F^2</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – number of loops authorized by the error stop criterion</p></li>
+<li><p><strong>cnt</strong> (<em>integer</em>) – final number of update iteration performed</p></li>
+<li><p><strong>rho</strong> (<em>float</em>) – number of loops authorized by the time stop criterion</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[2] J. Eggert, and E. Korner. “Sparse coding and NMF.”
+2004 IEEE International Joint Conference on Neural Networks
+(IEEE Cat. No. 04CH37541). Vol. 4. IEEE, 2004.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.BETA_hals_sparse_smooth_nnls_acc">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">BETA_hals_sparse_smooth_nnls_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">UtM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UtU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LtL_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.BETA_hals_sparse_smooth_nnls_acc" title="Permalink to this definition">#</a></dt>
+<dd><p>Non Negative Least Squares (NNLS)
+with sparsity and smoothness constraints
+========================================</p>
+<p>Computes an approximate solution of a nonnegative least
+squares problem (NNLS) with an exact block-coordinate descent scheme.
+M is m by n, U is m by r, V is r by n.
+All matrices are nonnegative componentwise.
+The used NNLS resolution algorithm problem is defined in [1],
+and is an accelerated HALS algorithm.</p>
+<p>It features two accelerations: an early stop stopping criterion, and a
+complexity averaging between precomputations and loops, so as to use large
+precomputations several times.</p>
+<p>This function is made for being used repetively inside an
+outer-loop alternating algorithm, for instance for computing nonnegative
+matrix Factorization or tensor factorization.</p>
+<p>This algorithm add two constraints over the shape of V: sparsity and smoothness.
+The optimization problem is defined as below (see [2] for instance):</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2 + 2*sp * (sumlimits_{j = 0}^{r}||V[k,:]||_1) + sm* (sumlimits_{j = 0}^{r} ||L V[k,:]||_2^2)</p>
+</div></blockquote>
+<p>with L the smoothness matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>UtM</strong> (<em>r-by-n array</em>) – Pre-computed product of the transposed of U and M, used in the update rule</p></li>
+<li><p><strong>UtU</strong> (<em>r-by-r array</em>) – Pre-computed product of the transposed of U and U, used in the update rule</p></li>
+<li><p><strong>in_V</strong> (<em>r-by-n initialization matrix</em><em> (</em><em>mutable</em><em>)</em>) – Initialized V array
+By default, is initialized with one non-zero entry per column
+corresponding to the closest column of U of the corresponding column of M.</p></li>
+<li><p><strong>LtL</strong> (<em>array</em>) – The matrix for coupling the factors enhancing smoothness (tridiagonal in general)</p></li>
+<li><p><strong>sp</strong> (<em>float</em>) – The weight given to sparsity in the objective function</p></li>
+<li><p><strong>sm</strong> (<em>float</em>) – The weight given to smoothness in the objective function</p></li>
+<li><p><strong>maxiter</strong> (<em>Postivie integer</em>) – Upper bound on the number of iterations
+Default: 500</p></li>
+<li><p><strong>atime</strong> (<em>Positive float</em>) – Time taken to do the precomputations UtU and UtM
+Default: None</p></li>
+<li><p><strong>alpha</strong> (<em>Positive float</em>) – Ratio between outer computations and inner loops, typically set to 0.5 or 1.
+Default: 0.5</p></li>
+<li><p><strong>delta</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – early stop criterion, while err_k &gt; delta*err_0. Set small for
+almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
+of a PARAFAC computation.
+Default: 0.01</p></li>
+<li><p><strong>normalize</strong> (<em>boolean</em>) – True in order to normalize each of the k-th line of V after the update
+False not to update them
+Default: False</p></li>
+<li><p><strong>nonzero</strong> (<em>boolean</em>) – True if the lines of the V matrix can’t be zero,
+False if they can be zero
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>V</strong> (<em>array</em>) – a r-by-n nonnegative matrix pprox argmin_{V &gt;= 0} ||M-UV||_F^2 + mu * ||V - Vtarget||_F^2</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – number of loops authorized by the error stop criterion</p></li>
+<li><p><strong>cnt</strong> (<em>integer</em>) – final number of update iteration performed</p></li>
+<li><p><strong>rho</strong> (<em>float</em>) – number of loops authorized by the time stop criterion</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[2] Kimura, T., &amp; Takahashi, N. (2017). Gauss-Seidel HALS Algorithm for
+Nonnegative Matrix Factorization with Sparseness and Smoothness Constraints.
+IEICE Transactions on Fundamentals of Electronics,
+Communications and Computer Sciences, 100(12), 2925-2935.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.create_L">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">create_L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.create_L" title="Permalink to this definition">#</a></dt>
+<dd><p>L matrix for the calculus of the l2 norm of a column of H in the smoothness criteria
+(see Kimura, T., &amp; Takahashi, N. (2017). Gauss-Seidel HALS Algorithm for Nonnegative Matrix Factorization with Sparseness and Smoothness Constraints. IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences, 100(12), 2925-2935.)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.hals_coupling_nnls_acc">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">hals_coupling_nnls_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">UtM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UtU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vtarget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.hals_coupling_nnls_acc" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes an approximate solution of a nonnegative least
+squares problem (NNLS) with an exact block-coordinate descent scheme.
+M is m by n, U is m by r, V is r by n.
+All matrices are nonnegative componentwise.
+The used NNLS resolution algorithm problem is defined in [1],
+and is an accelerated HALS algorithm.</p>
+<p>It features two accelerations: an early stop stopping criterion, and a
+complexity averaging between precomputations and loops, so as to use large
+precomputations several times.</p>
+<p>This function is made for being used repetively inside an
+outer-loop alternating algorithm, for instance for computing nonnegative
+matrix Factorization or tensor factorization.</p>
+<p>Nonetheless, this version is adapted for coupling the returned matrix
+to a second matrix, called Vtarget.
+The optimization problem is defined for PARAFAC2 in [2] as below:</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2 + mu * ||V - Vtarget||_F^2</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>UtM</strong> (<em>r-by-n array</em>) – Pre-computed product of the transposed of U and M, used in the update rule</p></li>
+<li><p><strong>UtU</strong> (<em>r-by-r array</em>) – Pre-computed product of the transposed of U and U, used in the update rule</p></li>
+<li><p><strong>in_V</strong> (<em>r-by-n initialization matrix</em><em> (</em><em>mutable</em><em>)</em>) – Initialized V array
+By default, is initialized with one non-zero entry per column
+corresponding to the closest column of U of the corresponding column of M.</p></li>
+<li><p><strong>Vtarget</strong> (<em>array</em>) – The matrix for V to approach</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – The weight given to coupling in the objective function</p></li>
+<li><p><strong>maxiter</strong> (<em>Postivie integer</em>) – Upper bound on the number of iterations
+Default: 500</p></li>
+<li><p><strong>atime</strong> (<em>Positive float</em>) – Time taken to do the precomputations UtU and UtM
+Default: None</p></li>
+<li><p><strong>alpha</strong> (<em>Positive float</em>) – Ratio between outer computations and inner loops, typically set to 0.5 or 1.
+Default: 0.5</p></li>
+<li><p><strong>delta</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – early stop criterion, while err_k &gt; delta*err_0. Set small for
+almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
+of a PARAFAC computation.
+Default: 0.01</p></li>
+<li><p><strong>normalize</strong> (<em>boolean</em>) – True in order to normalize each of the k-th line of V after the update
+False not to update them
+Default: False</p></li>
+<li><p><strong>nonzero</strong> (<em>boolean</em>) – True if the lines of the V matrix can’t be zero,
+False if they can be zero
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>V</strong> (<em>array</em>) – a r-by-n nonnegative matrix pprox argmin_{V &gt;= 0} ||M-UV||_F^2 + mu * ||V - Vtarget||_F^2</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – number of loops authorized by the error stop criterion</p></li>
+<li><p><strong>cnt</strong> (<em>integer</em>) – final number of update iteration performed</p></li>
+<li><p><strong>rho</strong> (<em>float</em>) – number of loops authorized by the time stop criterion</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[2] J. E. Cohen and R. Bro, Nonnegative PARAFAC2: A Flexible Coupling Approach,
+DOI: 10.1007/978-3-319-93764-9_9</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.hals_nnls_acc">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">hals_nnls_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">UtM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UtU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.hals_nnls_acc" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes an approximate solution of a nonnegative least
+squares problem (NNLS) with an exact block-coordinate descent scheme.
+M is m by n, U is m by r, V is r by n.
+All matrices are nonnegative componentwise.</p>
+<p>The NNLS unconstrained problem, as defined in [1], solve the following problem:</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2</p>
+</div></blockquote>
+<p>The matrix V is updated linewise.</p>
+<p>The update rule of the k-th line of V (V[k,:]) for this resolution is:</p>
+<blockquote>
+<div><p>V[k,:]_(j+1) = V[k,:]_(j) + (UtM[k,:] - UtU[k,:] V_(j))/UtU[k,k]</p>
+</div></blockquote>
+<p>with j the update iteration.</p>
+<p>This problem can also be defined by adding a sparsity coefficient,
+enhancing sparsity in the solution [2]. The problem thus becomes:</p>
+<blockquote>
+<div><p>min_{V &gt;= 0} ||M-UV||_F^2 + 2*sparsity_coefficient*(sumlimits_{j = 0}^{r}||V[k,:]||_1)</p>
+</div></blockquote>
+<p>NB: 2*sp for uniformization in the derivative</p>
+<p>In this sparse version, the update rule for V[k,:] becomes:</p>
+<blockquote>
+<div><p>V[k,:]_(j+1) = V[k,:]_(j) + (UtM[k,:] - UtU[k,:] V_(j) - sparsity_coefficient)/UtU[k,k]</p>
+</div></blockquote>
+<p>This algorithm is defined in [1], as an accelerated version of the HALS algorithm.</p>
+<p>It features two accelerations: an early stop stopping criterion, and a
+complexity averaging between precomputations and loops, so as to use large
+precomputations several times.</p>
+<p>This function is made for being used repetively inside an
+outer-loop alternating algorithm, for instance for computing nonnegative
+matrix Factorization or tensor factorization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>UtM</strong> (<em>r-by-n array</em>) – Pre-computed product of the transposed of U and M, used in the update rule</p></li>
+<li><p><strong>UtU</strong> (<em>r-by-r array</em>) – Pre-computed product of the transposed of U and U, used in the update rule</p></li>
+<li><p><strong>in_V</strong> (<em>r-by-n initialization matrix</em><em> (</em><em>mutable</em><em>)</em>) – Initialized V array
+By default, is initialized with one non-zero entry per column
+corresponding to the closest column of U of the corresponding column of M.</p></li>
+<li><p><strong>maxiter</strong> (<em>Postivie integer</em>) – Upper bound on the number of iterations
+Default: 500</p></li>
+<li><p><strong>atime</strong> (<em>Positive float</em>) – Time taken to do the precomputations UtU and UtM
+Default: None</p></li>
+<li><p><strong>alpha</strong> (<em>Positive float</em>) – Ratio between outer computations and inner loops, typically set to 0.5 or 1.
+Default: 0.5</p></li>
+<li><p><strong>delta</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – early stop criterion, while err_k &gt; delta*err_0. Set small for
+almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
+of a PARAFAC computation.
+Default: 0.01</p></li>
+<li><p><strong>sparsity_coefficient</strong> (<em>float</em><em> or </em><em>None</em>) – The coefficient controling the sparisty level in the objective function.
+If set to None, the problem is solved unconstrained.
+Default: None</p></li>
+<li><p><strong>normalize</strong> (<em>boolean</em>) – True in order to normalize each of the k-th line of V after the update
+False not to update them
+Default: False</p></li>
+<li><p><strong>nonzero</strong> (<em>boolean</em>) – True if the lines of the V matrix can’t be zero,
+False if they can be zero
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>V</strong> (<em>array</em>) – a r-by-n nonnegative matrix pprox argmin_{V &gt;= 0} ||M-UV||_F^2</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – number of loops authorized by the error stop criterion</p></li>
+<li><p><strong>cnt</strong> (<em>integer</em>) – final number of update iteration performed</p></li>
+<li><p><strong>rho</strong> (<em>float</em>) – number of loops authorized by the time stop criterion</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[2] J. Eggert, and E. Korner. “Sparse coding and NMF.”
+2004 IEEE International Joint Conference on Neural Networks
+(IEEE Cat. No. 04CH37541). Vol. 4. IEEE, 2004.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mu_ntd.algorithms.nnls.keep_most_powerful">
+<span class="sig-prename descclassname"><span class="pre">mu_ntd.algorithms.nnls.</span></span><span class="sig-name descname"><span class="pre">keep_most_powerful</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mu_ntd.algorithms.nnls.keep_most_powerful" title="Permalink to this definition">#</a></dt>
+<dd><p>A function to keep only the percentage% most powerful facotrs of data, in the sense of l2 norm,
+which means that the returned data_sparse would be computed with the highest coefficients of data,
+and stop when ||data_sparse||_2 &gt;= percentage/100 * ||data||_2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array</em>) – The data to sparsify</p></li>
+<li><p><strong>percentage</strong> (<em>float</em>) – A float in the range [0, 100], percntage of l2 norm that will be kept</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>data_sparse</strong> – Data sparsified with that technique</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-apgd_ntd.algorithms.ntd"></span><p>Created on Tue Jun 11 16:52:21 2019
+Updated on Wed Dec 29 2021</p>
+<p>&#64;author: amarmore, vleplat</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="apgd_ntd.algorithms.ntd.ntd_apgd">
+<span class="sig-prename descclassname"><span class="pre">apgd_ntd.algorithms.ntd.</span></span><span class="sig-name descname"><span class="pre">ntd_apgd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity_coefficients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_core_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_costs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apgd_ntd.algorithms.ntd.ntd_apgd" title="Permalink to this definition">#</a></dt>
+<dd><p>Factorization of a tensor T in nonnegative matrices,
+linked by a nonnegative core tensor, of dimensions equal to the ranks
+(in general smaller than the tensor).
+See more details about the NTD in [1].</p>
+<dl class="simple">
+<dt>For example, in the third-order case, resolution of:</dt><dd><p>T pprox (W otimes H otimes Q) G</p>
+</dd>
+</dl>
+<p>In this example, W, H and Q are the factors, one per mode, and G is the core tensor.
+W is of size T.shape[0] * ranks[0],
+H is of size T.shape[1] * ranks[1],
+Q is of size T.shape[2] * ranks[2],
+G is of size ranks[0] * ranks[1] * ranks[2].</p>
+<p>More precisely, the chosen optimization algorithm is a projected gradient scheme,
+The projected gradient rule is derived by the authors, and doesn’t appear in citation for now.</p>
+<p>Tensors are manipulated with the tensorly toolbox [3].</p>
+<p>In tensorly and in our convention, tensors are unfolded and treated as described in [4].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>tensorly tensor</em>) – The nonnegative tensor T, to factorize</p></li>
+<li><p><strong>ranks</strong> (<em>list of integers</em>) – The ranks for each factor of the decomposition</p></li>
+<li><p><strong>init</strong> (<em>&quot;random&quot;</em><em> | </em><em>&quot;tucker&quot;</em><em> | </em><em>&quot;custom&quot;</em><em> |</em>) – <ul>
+<li><dl class="simple">
+<dt>If set to random:</dt><dd><p>Initializes with random factors of the correct size.
+The randomization is the uniform distribution in [0,1),
+which is the default from numpy random.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to tucker:</dt><dd><p>Resolve a tucker decomposition of the tensor T (by HOSVD) and
+initializes the factors and the core as this resolution, clipped to be nonnegative.
+The tucker decomposition is performed with tensorly [3].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to “chromas”:</dt><dd><p>Resolve a tucker decomposition of the tensor T (by HOSVD) and
+initializes the factors and the core as this resolution, clipped to be nonnegative.
+The tucker decomposition is performed with tensorly [3].
+Contrary to “tucker” init, the first factor will then be set to the 12-size identity matrix,
+because it’s a decomposition model specific for modeling music expressed in chromas.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If set to custom:</dt><dd><p>core_0 and factors_0 (see below) will be used for the initialization</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Default: random</p>
+</p></li>
+<li><p><strong>core_0</strong> (<em>None</em><em> or </em><em>tensor of nonnegative floats</em>) – A custom initialization of the core, used only in “custom” init mode.
+Default: None</p></li>
+<li><p><strong>factors_0</strong> (<em>None</em><em> or </em><em>list of array of nonnegative floats</em>) – A custom initialization of the factors, used only in “custom” init mode.
+Default: None</p></li>
+<li><p><strong>n_iter_max</strong> (<em>integer</em>) – The maximal number of iteration before stopping the algorithm
+Default: 100</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Threshold on the improvement in objective function value.
+Between two succesive iterations, if the difference between
+both objective function values is below this threshold, the algorithm stops.
+Default: 1e-6</p></li>
+<li><p><strong>sparsity_coefficients</strong> (<em>list of float</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – The sparsity coefficients on each factor and on the core respectively.
+If set to None or [], the algorithm is computed without sparsity
+Default: []</p></li>
+<li><p><strong>fixed_modes</strong> (<em>list of integers</em><em> (</em><em>between 0 and the number of modes + 1 for the core</em><em>)</em>) – Has to be set not to update a factor, taken in the order of modes and lastly on the core.
+Default: []</p></li>
+<li><p><strong>normalize</strong> (<em>list of boolean</em><em> (</em><em>as much as the number of modes + 1 for the core</em><em>)</em>) – Indicates whether the factors need to be normalized or not.
+The normalization is a l_2 normalization on each of the rank components
+(For the factors, each column will be normalized, ie each atom of the dimension of the current rank).
+Default: []</p></li>
+<li><p><strong>mode_core_norm</strong> (<em>integer</em><em> or </em><em>None</em>) – The mode on which normalize the core, or None if normalization shouldn’t be enforced.
+Will only be useful if the last element of the previous “normalise” argument is set to True.
+Indexes of the modes start at 0.
+Default: None</p></li>
+<li><p><strong>hals</strong> (<em>boolean</em>) – Whether to run hals (true) or gradient (false) update on the core.
+Default (and recommanded): false</p></li>
+<li><p><strong>verbose</strong> (<em>boolean</em>) – Indicates whether the algorithm prints the monitoring of the convergence
+or not
+Default: False</p></li>
+<li><p><strong>return_costs</strong> (<em>boolean</em>) – Indicates whether the algorithm should return all objective function
+values and computation time of each iteration or not
+Default: False</p></li>
+<li><p><strong>deterministic</strong> – Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation,
+and optimization techniques in the NNLS, function of the runtime.
+This is made to enhance reproducible research, and should be set to True for computation of results.</p></li>
+<li><p><strong>extrapolate</strong> – Runs the algorithm by using extrapolation techniques HER introduced in [5]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>core</strong> (<em>tensorly tensor</em>) – The core tensor linking the factors of the decomposition</p></li>
+<li><p><strong>factors</strong> (<em>numpy #TODO: For tensorly pulling, replace numpy by backend</em>) – An array containing all the factors computed with the NTD</p></li>
+<li><p><strong>cost_fct_vals</strong> (<em>list</em>) – A list of the objective function values, for every iteration of the algorithm.</p></li>
+<li><p><strong>toc</strong> (<em>list, only if return_errors == True</em>) – A list with accumulated time at each iterations</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>tensor = np.random.rand(80,100,120)
+ranks = [10,20,15]
+core, factors = NTD.ntd(tensor, ranks = ranks, init = “tucker”, verbose = True, hals = False,</p>
+<blockquote>
+<div><p>sparsity_coefficients = [None, None, None, None], normalize = [True, True, False, True])</p>
+</div></blockquote>
+<p class="rubric">References</p>
+<p>[1] Tamara G Kolda and Brett W Bader. “Tensor decompositions and applications”,
+SIAM review 51.3 (2009), pp. 455{500.</p>
+<p>[2]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[3] J. Kossai et al. “TensorLy: Tensor Learning in Python”,
+arxiv preprint (2018)</p>
+<p>[4] Jeremy E Cohen. “About notations in multiway array processing”,
+arXiv preprint arXiv:1511.01306, (2015).</p>
+<p>[5] A.M.S. Ang and N. Gillis. “Accelerating Nonnegative Matrix Factorization Algorithms Using Extrapolatiog”,
+Neural Computation 31 (2): 417-439, 2019.</p>
+</dd></dl>
+
+<span class="target" id="module-apgd_ntd.algorithms.APGD_epsilon"></span><p>Created on Mon Sep 20 13:04:50 2021</p>
+<p>&#64;author: Valentin Leplat</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="apgd_ntd.algorithms.APGD_epsilon.APGD_factors">
+<span class="sig-prename descclassname"><span class="pre">apgd_ntd.algorithms.APGD_epsilon.</span></span><span class="sig-name descname"><span class="pre">APGD_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apgd_ntd.algorithms.APGD_epsilon.APGD_factors" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes an approximate solution of a Frob-NMF
+with the gradient descent
+M is m by n, U is m by r, V is r by n.
+All matrices are nonnegative componentwise.</p>
+<p>The problem is solved for the beta-divergence:</p>
+<blockquote>
+<div><p>min_{U &gt;= 0} ||M - UV||_F^2</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>U</strong> (<em>m-by-r array</em>) – The first factor of the NNLS, the one which will be updated.</p></li>
+<li><p><strong>V</strong> (<em>r-by-n array</em>) – The second factor of the NNLS, which won’t be updated.</p></li>
+<li><p><strong>M</strong> (<em>m-by-n array</em>) – The initial matrix, to approach.</p></li>
+<li><p><strong>epsilon</strong> (<em>lower bound for entries of U and V</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>U</strong> – a m-by-r nonnegative matrix pprox argmin_{U &gt;= 0} ||M - UV||_F^2</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+Neural Computation 24 (4): 1085-1105, 2012.</p>
+<p>[2] D. Lee and H. S. Seung, Learning the parts of objects by non-negative
+matrix factorization., Nature, vol. 401, no. 6755, pp. 788–791, 1999.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apgd_ntd.algorithms.APGD_epsilon.APGD_tensorial">
+<span class="sig-prename descclassname"><span class="pre">apgd_ntd.algorithms.APGD_epsilon.</span></span><span class="sig-name descname"><span class="pre">APGD_tensorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_factors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apgd_ntd.algorithms.APGD_epsilon.APGD_tensorial" title="Permalink to this definition">#</a></dt>
+<dd><p>This function is used to update the core G of a
+nonnegative Tucker Decomposition (NTD) [1] with Frobenius norm</p>
+<p>See ntd.py of this module for more details on the NTD (or [1])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>tensorly tensor</em>) – Core tensor at this iteration.</p></li>
+<li><p><strong>factors</strong> (<em>list of tensorly tensors</em>) – Factors for NTD at this iteration.</p></li>
+<li><p><strong>T</strong> (<em>tensorly tensor</em>) – The tensor to estimate with NTD.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>G</strong> – Update core in NTD.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tensorly tensor</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Tamara G Kolda and Brett W Bader. “Tensor decompositions and applications”,
+SIAM review 51.3 (2009), pp. 455{500.</p>
+<p>[2] D. Lee and H. S. Seung, Learning the parts of objects by non-negative
+matrix factorization., Nature, vol. 401, no. 6755, pp. 788–791, 1999.</p>
+</dd></dl>
+
+</section>
+<section id="documentation-for-useful-scripts">
+<h2>Documentation for useful scripts<a class="headerlink" href="#documentation-for-useful-scripts" title="Permalink to this headline">#</a></h2>
+<dl class="simple">
+<dt>%.. automodule:: mu_ntd.scripts</dt><dd><p>%:members:</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="internal-links">
+<h1>Internal links<a class="headerlink" href="#internal-links" title="Permalink to this headline">#</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 </ul>
-</div>
+</section>
 
 
               </div>
               
-        
-            <!-- Previous / next buttons -->
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
 <div class='prev-next-area'>
 </div>
-        
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-    <div class="container">
-      <p>
-        
-          By Valentin Leplat and Jeremy E. Cohen<br/>
-        
-            &copy; Copyright 2021, Valentin Leplat and Jeremy E. Cohen.<br/>
-      </p>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Valentin Leplat and Jeremy E. Cohen<br/>
+  
+      &copy; Copyright 2021, Valentin Leplat and Jeremy E. Cohen.<br/>
+</p>
+        </footer>
     </div>
-  </footer>
-</main>
+    
+</div>
 
 
       </div>
     </div>
   
-  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>
