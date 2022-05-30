@@ -6,10 +6,7 @@ Created on Mon Sep 20 13:04:50 2021
 """
 
 import numpy as np
-import time
 import tensorly as tl
-import mu_ntd.utils.errors as err
-import mu_ntd.utils.beta_divergence as beta_div
 
 def APGD_factors(U, V, M, beta, epsilon):
     """

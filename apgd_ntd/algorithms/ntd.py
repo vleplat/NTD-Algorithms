@@ -7,23 +7,14 @@ Updated on Wed Dec 29 2021
 """
 
 import numpy as np
-import scipy
 import time
 import tensorly as tl
 from tensorly.decomposition import tucker as tl_tucker
-import math
-import mu_ntd.algorithms.nnls as nnls
-import mu_ntd.utils.errors as err
-import mu_ntd.algorithms.mu_epsilon as mu
-import mu_ntd.algorithms.PGD_LS_epsilon as pgd
-import mu_ntd.utils.beta_divergence as beta_div
+import nn_fac.errors as err
+import nn_fac.beta_divergence as beta_div
 import apgd_ntd.algorithms.APGD_epsilon as apgd
 
 import numpy as np
-
-import scipy.sparse as sci_sparse
-
-
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 # Accelerated Projected Gradient Method with HER for NTD with Frobenius Norm only

@@ -8,6 +8,7 @@ import tensorly as tl
 # import nnfac instead, beta=2 MU NTD and HALS are implemented (but not with l1 + l2...)
 # I will mod the relevant code in nnfac if we need comparison with beta=2
 # Some tweaks are needed with the error computation, and add extrapolation
+# run pip install -e . locally in nn_fac
 from nn_fac import ntd as NTD
 import apgd_ntd.algorithms.ntd as APGD
 import matplotlib.pyplot as plt
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     core_HALS, factors_HALS, cost_fct_vals_HALS, toc_HALS = NTD.ntd(T, ranks, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6,
                                                 sparsity_coefficients = None, fixed_modes = [], normalize = None, verbose = True, return_costs = True)
     
+
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Reporting
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
