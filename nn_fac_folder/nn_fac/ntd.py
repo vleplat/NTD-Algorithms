@@ -466,8 +466,8 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
         sparsity_coefficients[fixed_value] = None
 
     # Copy
-    core = in_core.copy()
-    factors = in_factors.copy()
+    core = in_core #in_core.copy()
+    factors = in_factors #in_factors.copy()
 
     # Generating the mode update sequence
     modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
@@ -523,7 +523,7 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
     # better implementation: reuse the computation of temp !
     # Also reuse elemprod form last update
     all_MtX = tl.tenalg.mode_dot(temp, tl.transpose(factors[modes_list[-1]]), modes_list[-1])
-    all_MtM = tl.copy(elemprod)
+    all_MtM = elemprod #tl.copy(elemprod)
     all_MtM[modes_list[-1]] = factors[modes_list[-1]].T@factors[modes_list[-1]]
 
     #all_MtM = np.array([fac.T@fac for fac in factors])
@@ -580,7 +580,9 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
             else:
                 raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
 
-    rec_error = norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
+    #rec_error = norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core)
+    reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
+    rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2)
     cost_fct_val = (rec_error + sparsity_error) #/ norm_tensor
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
@@ -876,8 +878,8 @@ def one_ntd_step_mu(tensor, ranks, in_core, in_factors, beta,
     and on the core.
     """
     # Copy
-    core = in_core.copy()
-    factors = in_factors.copy()
+    core = in_core #in_core.copy()
+    factors = in_factors #in_factors.copy()
 
     # Generating the mode update sequence
     modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
