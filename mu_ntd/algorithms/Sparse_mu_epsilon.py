@@ -9,7 +9,7 @@ Created on 2022
 import numpy as np
 import time
 import tensorly as tl
-import mu_ntd.utils.errors as err
+import nn_fac.errors as err
 
 def gamma(beta):
     """

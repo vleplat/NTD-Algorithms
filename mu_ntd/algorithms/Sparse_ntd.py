@@ -11,8 +11,8 @@ import tensorly as tl
 from tensorly.decomposition import tucker as tl_tucker
 
 import mu_ntd.algorithms.Sparse_mu_epsilon as mu
-import mu_ntd.utils.errors as err
-import mu_ntd.utils.beta_divergence as beta_div
+import nn_fac.errors as err
+import nn_fac.beta_divergence as beta_div
 
 import numpy as np
 
