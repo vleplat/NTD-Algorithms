@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
+# TODO:
+# - Arbitrary number of inner iterations + heuristic Gillis-like
+# - Sparse l1 reg in MU
+# - Industry-scale tests
+
 # Python classics
 import numpy as np
 import tensorly as tl

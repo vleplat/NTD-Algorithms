@@ -4,6 +4,9 @@ Created on Tue Jun 11 16:52:21 2019
 
 @author: veplat, based on amarmoret code
 """
+# TODO: 
+# - l1 not only on G
+
 
 import numpy as np
 import time
@@ -18,9 +21,149 @@ import numpy as np
 
 
 ######################### Temporary, to test mu and not break everything
-def sntd_mu(tensor, ranks, muWeight, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
-           sparsity_coefficients = [], fixed_modes = [], normalize = [], mode_core_norm = None, beta = 2,
-           verbose=False, return_costs=False, deterministic=False, extrapolate=False):
+def sntd_mu(tensor, ranks, l2weights, l1weights=None, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
+           fixed_modes = [], normalize = [], mode_core_norm = None, beta = 2,
+           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12):
+    """
+    ======================================
+    Sparse Nonnegative Tucker Decomposition (sNTD) with beta-div loss
+    ======================================
+
+    Factorization of a tensor T in nonnegative matrices,
+    linked by a nonnegative core tensor, of dimensions equal to the ranks
+    (in general smaller than the tensor).
+    See more details about the NTD in [1].
+
+    For example, in the third-order case, resolution of:
+        T \approx (W \otimes H \otimes Q) G
+
+    In this example, W, H and Q are the factors, one per mode, and G is the core tensor.
+    W is of size T.shape[0] * ranks[0],
+    H is of size T.shape[1] * ranks[1],
+    Q is of size T.shape[2] * ranks[2],
+    G is of size ranks[0] * ranks[1] * ranks[2].
+
+    More precisely, the chosen optimization algorithm is a multiplicative update scheme, with a beta-divergence loss elementwise. By default beta=1 which corresponds to the Kullback-Leibler divergence.
+    The MU rule is derived by the authors, and doesn't appear in citation for now.
+
+    Sparsity is handled using a l1 penalty term on the sparse factors, and a l2 ridge penalty on other factors to avoid scaling degeneracy.
+
+    Tensors are manipulated with the tensorly toolbox [3]. In tensorly and in our convention, tensors are unfolded and treated as described in [4].
+
+    Parameters
+    ----------
+    tensor: tensorly tensor
+        The nonnegative tensor T, to factorize
+    ranks: list of integers
+        The ranks for each factor of the decomposition
+    l2weights: list of floats
+        The regularisation parameters using Euclidean norm as a penalisation.
+        Prevents scaling degeneracy. Use on all factors which do not have l1
+        regularisation, if l1 is used.
+    l1weights: list of floats
+        The regularisation parameters using l1 norm as a penalisation. Induces sparsity.
+        Default: None
+    init: "random" | "tucker" | "custom" |
+        - If set to random:
+            Initializes with random factors of the correct size.
+            The randomization is the uniform distribution in [0,1),
+            which is the default from numpy random.
+        - If set to tucker:
+            Resolve a tucker decomposition of the tensor T (by HOSVD) and
+            initializes the factors and the core as this resolution, clipped to be nonnegative.
+            The tucker decomposition is performed with tensorly [3].
+        - If set to "chromas":
+            Resolve a tucker decomposition of the tensor T (by HOSVD) and
+            initializes the factors and the core as this resolution, clipped to be nonnegative.
+            The tucker decomposition is performed with tensorly [3].
+            Contrary to "tucker" init, the first factor will then be set to the 12-size identity matrix,
+            because it's a decomposition model specific for modeling music expressed in chromas.
+        - If set to custom:
+            core_0 and factors_0 (see below) will be used for the initialization
+        Default: random
+    core_0: None or tensor of nonnegative floats
+        A custom initialization of the core, used only in "custom" init mode.
+        Default: None
+    factors_0: None or list of array of nonnegative floats
+        A custom initialization of the factors, used only in "custom" init mode.
+        Default: None
+    n_iter_max: integer
+        The maximal number of iteration before stopping the algorithm
+        Default: 100
+    tol: float
+        Threshold on the improvement in objective function value.
+        Between two successive iterations, if the difference between
+        both objective function values is below this threshold, the algorithm stops.
+        Default: 1e-6
+    fixed_modes: list of integers (between 0 and the number of modes + 1 for the core)
+        Has to be set not to update a factor, taken in the order of modes and lastly on the core.
+        Default: []
+    normalize: list of boolean (as much as the number of modes + 1 for the core)
+        Indicates whether the factors need to be normalized or not.
+        The normalization is a l_2 normalization on each of the rank components
+        (For the factors, each column will be normalized, ie each atom of the dimension of the current rank).
+        Default: []
+    mode_core_norm: integer or None
+        The mode on which normalize the core, or None if normalization shouldn't be enforced.
+        Will only be useful if the last element of the previous "normalise" argument is set to True.
+        Indexes of the modes start at 0.
+        Default: None
+    verbose: boolean
+        Indicates whether the algorithm prints the monitoring of the convergence
+        or not
+        Default: False
+    beta : float
+        The value of the beta parameter in the beta-divergence loss.
+        Default : 1
+    return_costs: boolean
+        Indicates whether the algorithm should return all objective function
+        values and computation time of each iteration or not
+        Default: False
+    deterministic:
+        Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation,
+        and optimization techniques in the NNLS, function of the runtime.
+        This is made to enhance reproducible research, and should be set to True for computation of results.
+    extrapolate:
+        Runs the algorithm by using extrapolation techniques HER introduced in [5]
+    epsilon: float
+        Lower-bound for the values in factors for MU.
+        Default: 1e-12
+
+    Returns
+    -------
+    core: tensorly tensor
+        The core tensor linking the factors of the decomposition
+    factors: numpy #TODO: For tensorly pulling, replace numpy by backend
+        An array containing all the factors computed with the NTD
+    cost_fct_vals: list
+        A list of the objective function values, for every iteration of the algorithm.
+    toc: list, only if return_errors == True
+        A list with accumulated time at each iterations
+    alpha_store: list
+        A list with all extrapolation steps alpha stored during the iterations, for debugging.
+
+    Example
+    -------
+    TODO
+
+    References
+    ----------
+    [1] Tamara G Kolda and Brett W Bader. "Tensor decompositions and applications",
+    SIAM review 51.3 (2009), pp. 455{500.
+
+    [2]: N. Gillis and F. Glineur, Accelerated Multiplicative Updates and
+    Hierarchical ALS Algorithms for Nonnegative Matrix Factorization,
+    Neural Computation 24 (4): 1085-1105, 2012.
+
+    [3] J. Kossai et al. "TensorLy: Tensor Learning in Python",
+    arxiv preprint (2018)
+
+    [4] Jeremy E Cohen. "About notations in multiway array processing",
+    arXiv preprint arXiv:1511.01306, (2015).
+    
+    [5] A.M.S. Ang and N. Gillis. "Accelerating Nonnegative Matrix Factorization Algorithms Using Extrapolatiog",
+    Neural Computation 31 (2): 417-439, 2019.
+    """
     factors = []
     nb_modes = len(tensor.shape)
 
@@ -35,6 +178,39 @@ def sntd_mu(tensor, ranks, muWeight, init = "random", core_0 = None, factors_0 =
             ranks[i] = tensor.shape[i]
             #warnings.warn('ignoring MIDI message %s' % msg)
             print("The " + str(i) + "-th mode rank was larger than the shape of the tensor, which is incorrect. Set to the shape of the tensor")
+
+    # Processing l1 and l2 coefficients
+    if l1weights == None:
+        l1weights = [None for i in range(nb_modes + 1)]
+    if len(l1weights) != nb_modes + 1:
+        print("Irrelevant number of l1weights coefficient (different from the number of modes + 1 for the core), they have been set to None.")
+        l1weights = [None for i in range(nb_modes + 1)]
+    
+    if l2weights == None:
+        l2weights = [None for i in range(nb_modes + 1)]
+    if len(l2weights) != nb_modes + 1:
+        print("Irrelevant number of l2weights coefficient (different from the number of modes + 1 for the core), they have been set to None.")
+        l2weights = [None for i in range(nb_modes + 1)]
+
+    # Checking if l1 and l2 regularisation has been used on the same mode.
+    # l1 and l2 being true is the problem
+    truthtable = l1weights & l2weights
+    if truthtable.any():
+        raise err.InvalidArgumentValue("A l2 and l1 regularization have been imposed on the same mode, which is not supported at the moment")
+
+    # A bunch of checks for the inputs
+    #TODO: set them as warnings
+    nb_modes = len(tensor.shape)
+    if fixed_modes == None:
+        fixed_modes = []
+    if normalize == None or len(normalize) != nb_modes + 1:
+        print("Irrelevant number of normalization booleans (different from the number of modes + 1 for the core), they have been set to False.")
+        normalize = [False for i in range(nb_modes + 1)]
+    if normalize[-1] and (mode_core_norm == None or mode_core_norm < 0 or mode_core_norm >= nb_modes):
+        print("The core was asked to be normalized, but an invalid mode was specified. Normalization has been set to False.")
+        normalize[-1] = False
+    if not normalize[-1] and (mode_core_norm != None and mode_core_norm >= 0 and mode_core_norm < nb_modes):
+        print("The core was asked NOT to be normalized, but mode_core_norm was set to a valid norm. Is this a mistake?")
 
     if init.lower() == "random":
         for mode in range(nb_modes):
@@ -51,6 +227,7 @@ def sntd_mu(tensor, ranks, muWeight, init = "random", core_0 = None, factors_0 =
         else:
             core = tl.tensor(np.random.rand(np.prod(ranks)).reshape(tuple(ranks)))
 
+        # Avoid zeroes in init, otherwise zero-locking phenomenon
         factors = [np.maximum(f, 1e-12) for f in factors]
         core = np.maximum(core, 1e-12)
 
@@ -77,21 +254,21 @@ def sntd_mu(tensor, ranks, muWeight, init = "random", core_0 = None, factors_0 =
     else:
         raise err.InvalidInitializationType('Initialization type not understood: ' + init)
 
-    if extrapolate:
-        return compute_sntd_mu_HER(tensor, ranks, muWeight, core, factors, n_iter_max=n_iter_max,
-                       sparsity_coefficients = sparsity_coefficients, fixed_modes = fixed_modes,
-                       normalize = normalize, mode_core_norm = mode_core_norm,
-                       verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic)
-    else:
-        return compute_sntd_mu(tensor, ranks, muWeight, core, factors, n_iter_max=n_iter_max, tol=tol,
-                       sparsity_coefficients = sparsity_coefficients, fixed_modes = fixed_modes,
-                       normalize = normalize, mode_core_norm = mode_core_norm,
-                       verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic)
+    #if extrapolate:
+    # TODO: fuse in one function?? HER with alpha=0 is notHER
+    # Check done correctly
+    return compute_sntd_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
+                       fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
+                       verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate)
+    #else:
+    #    return compute_sntd_mu(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max, tol=tol,
+    #                   fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
+    #                   verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic)
 
 
-def compute_sntd_mu_HER(tensor_in, ranks, muWeight, core_in, factors_in, n_iter_max=100,
-           sparsity_coefficients = [], fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
-           verbose=False, return_costs=False, deterministic=False):
+def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
+           fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
+           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False):
 
     # initialisation - store the input varaibles
     core = core_in.copy()
@@ -100,54 +277,48 @@ def compute_sntd_mu_HER(tensor_in, ranks, muWeight, core_in, factors_in, n_iter_
 
     norm_tensor = tl.norm(tensor, 2)
 
-    # set init if problem
-    #TODO: set them as warnings
-    nb_modes = len(tensor.shape)
-    if sparsity_coefficients == None or len(sparsity_coefficients) != nb_modes + 1:
-        print("Irrelevant number of sparsity coefficient (different from the number of modes + 1 for the core), they have been set to None.")
-        sparsity_coefficients = [None for i in range(nb_modes + 1)]
-    if fixed_modes == None:
-        fixed_modes = []
-    if normalize == None or len(normalize) != nb_modes + 1:
-        print("Irrelevant number of normalization booleans (different from the number of modes + 1 for the core), they have been set to False.")
-        normalize = [False for i in range(nb_modes + 1)]
-    if normalize[-1] and (mode_core_norm == None or mode_core_norm < 0 or mode_core_norm >= nb_modes):
-        print("The core was asked to be normalized, but an invalid mode was specified. Normalization has been set to False.")
-        normalize[-1] = False
-    if not normalize[-1] and (mode_core_norm != None and mode_core_norm >= 0 and mode_core_norm < nb_modes):
-        print("The core was asked NOT to be normalized, but mode_core_norm was set to a valid norm. Is this a mistake?")
-
     # initialisation - declare local varaibles
     cost_fct_vals = []     # value of the objective at the "best current" estimates
     cost_fct_vals_fycn=[]  # value of the objective at (factors_y, core_n)
     cost_fct_vals_fycn.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
-    cost_fct_vals.append(beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta))
+    cost_fct_vals.append(cost_fct_vals_fycn[0])
     tic = time.time()
-    toc = []
+    toc = [0]
     alpha_store = []
-    epsilon = 1e-12
 
     # the extrapolation parameters
-    alpha=0.05
-    print('Initial Alpha={}'.format(alpha))
+    if extrapolate:
+        alpha=0.05
+        print('Initial Alpha={}'.format(alpha))
 
-    alpha0 = alpha             #extrapolation parameter setting from last improvement
-    alphamax = 1               #1 but Andy told us to increase it to have fun, let us see
-    alpha_increase = 1.1       #1.1 max
-    alpha_reduce = 0.8         #0.75
-    alphamax_increase  = 1.05
+        alpha0 = alpha             #extrapolation parameter setting from last improvement
+        alphamax = 1               #1 but Andy told us to increase it to have fun, let us see
+        alpha_increase = 1.1       #1.1 max
+        alpha_reduce = 0.8         #0.75
+        alphamax_increase  = 1.05
+    else:
+        # no extrapolation
+        alpha=0
+        print('Initial Alpha={}'.format(alpha))
 
-    core_n = core.copy()        # non-extrapolated factor estimates
-    factors_n = factors.copy()  # non-extrapolated core estimates
-    core_y = core.copy()        # extrapolated factor estimates
-    factors_y = factors.copy()  # extrapolated core estimates
+        alpha0 = alpha             #extrapolation parameter setting from last improvement
+        alphamax = 0               #1 but Andy told us to increase it to have fun, let us see
+        alpha_increase = 1       #1.1 max
+        alpha_reduce = 1         #0.75
+        alphamax_increase  = 1
+    alpha_store.append(alpha)
+
+    core_n = core.copy()        # non-extrapolated factor best estimates
+    factors_n = factors.copy()  # non-extrapolated core best estimates
+    core_y = core.copy()        # extrapolated factor side estimates
+    factors_y = factors.copy()  # extrapolated core side estimates
 
     # Iterate over one step of NTD
     for iteration in range(n_iter_max):
 
         # One pass of MU on each updated mode
-        core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax = one_sntd_step_mu_HER(tensor, ranks, muWeight, core, factors, core_n, factors_n, core_y, factors_y, beta, norm_tensor,
-                                              fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals )
+        core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax = one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, core_n, factors_n, core_y, factors_y, beta, norm_tensor,
+                                              fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals)
 
         # Store the computation time, obj value, alpha
         toc.append(time.time() - tic)
@@ -178,17 +349,17 @@ def compute_sntd_mu_HER(tensor_in, ranks, muWeight, core_in, factors_in, n_iter_
     else:
         return core, factors
 
-def one_sntd_step_mu_HER(tensor, ranks, muWeight, in_core, in_factors, in_core_n, in_factors_n, in_core_y, in_factors_y, beta, norm_tensor,
+def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factors, in_core_n, in_factors_n, in_core_y, in_factors_y, beta, norm_tensor,
                    fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals):
-    # Copy
-    core = in_core.copy()
-    factors = in_factors.copy()
-    core_n = in_core_n.copy()
-    core_n_up = core_n.copy()
-    factors_n = in_factors_n.copy()
-    factors_n_up = factors_n.copy()
-    core_y = in_core_y.copy()
-    factors_y = in_factors_y.copy()
+    # No Copy
+    core = in_core#.copy()
+    factors = in_factors#.copy()
+    core_n = in_core_n#.copy()
+    core_n_up = core_n#.copy()
+    factors_n = in_factors_n#.copy()
+    factors_n_up = factors_n#.copy()
+    core_y = in_core_y#.copy()
+    factors_y = in_factors_y#.copy()
 
     cost_fct_val = cost_fct_vals[-1]
 
@@ -202,19 +373,21 @@ def one_sntd_step_mu_HER(tensor, ranks, muWeight, in_core, in_factors, in_core_n
     # Compute the extrapolated update for the factors.
     # Note that when alpha is zero, factors_y = factors_n.
     for mode in modes_list:
-        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, muWeight[mode+1])
+        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weight=l2weights[mode+1], l1weight=l1weights[mode+1], epsilon=epsilon)
         factors_y[mode] = np.maximum(factors_n_up[mode]+alpha*(factors_n_up[mode]-in_factors_n[mode]),epsilon)
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
-    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, muWeight[0])
-    core_y = np.maximum(core_n+alpha*(core_n-in_core_n),epsilon)
+    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[0], l1weight=l1weights[0], epsilon=epsilon)
+    core_y = np.maximum(core_n_up+alpha*(core_n_up-in_core_n),epsilon) #TODO check bug correction core_n_up?
 
     # Compute the value of the objective (loss) function at the
     # extrapolated solution for the factors (factors_y) and the
     # non-extrapolated solution for the core (core_n).
-    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n, factors_y), beta)+muWeight[0]*tl.norm(core_n, order=1)
+    # ---> No, we only did that for fast computation. Here there is no such fast comp, so we do it on the true estimates
+    # TODO: discuss OK
+    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ l2weights[0]*tl.norm(core_n_up) + l1weights[0]*tl.norm(core_n_up,1)
     for mode in modes_list:
-        cost_fycn = cost_fycn + 1/2*muWeight[mode+1]*np.linalg.norm(factors_y[mode],'fro')**2
+        cost_fycn = cost_fycn + 1/2*l2weights[mode+1]*tl.norm(factors_n_up[mode],'fro')**2 + l1weights[mode+1]*tl.norm(factors_n_up[mode],1)
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
@@ -245,107 +418,90 @@ def one_sntd_step_mu_HER(tensor, ranks, muWeight, in_core, in_factors, in_core_n
 
     return core, factors, core_n, factors_n, core_y, factors_y, cost_fct_val, cost_fycn, alpha, alpha0, alphamax
 
-def compute_sntd_mu(tensor_in, ranks, muWeight, core_in, factors_in, n_iter_max=100, tol=1e-6,
-           sparsity_coefficients = [], fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
-           verbose=False, return_costs=False, deterministic=False):
+#def compute_sntd_mu(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100, tol=1e-6,
+           #fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
+           #verbose=False, return_costs=False, deterministic=False):
 
-    # initialisation - store the input varaibles
-    core = core_in.copy()
-    factors = factors_in.copy()
-    tensor = tensor_in
+    ## initialisation - store the input varaibles
+    #core = core_in.copy()
+    #factors = factors_in.copy()
+    #tensor = tensor_in
 
-    norm_tensor = tl.norm(tensor, 2)
+    #norm_tensor = tl.norm(tensor, 2)
 
-    # set init if problem
-    #TODO: set them as warnings
-    nb_modes = len(tensor.shape)
-    if sparsity_coefficients == None or len(sparsity_coefficients) != nb_modes + 1:
-        print("Irrelevant number of sparsity coefficient (different from the number of modes + 1 for the core), they have been set to None.")
-        sparsity_coefficients = [None for i in range(nb_modes + 1)]
-    if fixed_modes == None:
-        fixed_modes = []
-    if normalize == None or len(normalize) != nb_modes + 1:
-        print("Irrelevant number of normalization booleans (different from the number of modes + 1 for the core), they have been set to False.")
-        normalize = [False for i in range(nb_modes + 1)]
-    if normalize[-1] and (mode_core_norm == None or mode_core_norm < 0 or mode_core_norm >= nb_modes):
-        print("The core was asked to be normalized, but an invalid mode was specified. Normalization has been set to False.")
-        normalize[-1] = False
-    if not normalize[-1] and (mode_core_norm != None and mode_core_norm >= 0 and mode_core_norm < nb_modes):
-        print("The core was asked NOT to be normalized, but mode_core_norm was set to a valid norm. Is this a mistake?")
+    ## initialisation - declare local varaibles
+    #cost_fct_vals = []
+    #tic = time.time()
+    #toc = []
+    #epsilon = 1e-12
+    ## initialisation - unfold the tensor according to the modes
+    ##unfolded_tensors = []
+    ##for mode in range(tl.ndim(tensor)):
+    ##   unfolded_tensors.append(tl.base.unfold(tensor, mode))
 
-    # initialisation - declare local varaibles
-    cost_fct_vals = []
-    tic = time.time()
-    toc = []
-    epsilon = 1e-12
-    # initialisation - unfold the tensor according to the modes
-    #unfolded_tensors = []
-    #for mode in range(tl.ndim(tensor)):
-    #   unfolded_tensors.append(tl.base.unfold(tensor, mode))
+    ## Iterate over one step of NTD
+    #for iteration in range(n_iter_max):
+        ## One pass of least squares on each updated mode
+        #core, factors, cost = one_sntd_step_mu(tensor, ranks, l2weights, core, factors, beta, norm_tensor,
+                                              #fixed_modes, normalize, mode_core_norm,epsilon)
 
-    # Iterate over one step of NTD
-    for iteration in range(n_iter_max):
-        # One pass of least squares on each updated mode
-        core, factors, cost = one_sntd_step_mu(tensor, ranks, muWeight, core, factors, beta, norm_tensor,
-                                              fixed_modes, normalize, mode_core_norm,epsilon)
+        ## Store the computation time
+        #toc.append(time.time() - tic)
 
-        # Store the computation time
-        toc.append(time.time() - tic)
+        #cost_fct_vals.append(cost)
 
-        cost_fct_vals.append(cost)
+        #if verbose:
+            #if iteration == 0:
+                #print('Initial Obj={}'.format(cost))
+            #else:
+                #if cost_fct_vals[-2] - cost_fct_vals[-1] > 0:
+                    #print('Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
+                            #cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol))
+                #else:
+                    ## print in red when the reconstruction error is negative (shouldn't happen)
+                    #print('\033[91m' + 'Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
+                            #cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol) + '\033[0m')
 
-        if verbose:
-            if iteration == 0:
-                print('Initial Obj={}'.format(cost))
-            else:
-                if cost_fct_vals[-2] - cost_fct_vals[-1] > 0:
-                    print('Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
-                            cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol))
-                else:
-                    # print in red when the reconstruction error is negative (shouldn't happen)
-                    print('\033[91m' + 'Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
-                            cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol) + '\033[0m')
+        #if iteration > 0 and (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])) < tol:
+            ## Stop condition: relative error between last two iterations < tol
+            #if verbose:
+                #print('Converged to the required tolerance in {} iterations.'.format(iteration))
+            #break
 
-        if iteration > 0 and (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])) < tol:
-            # Stop condition: relative error between last two iterations < tol
-            if verbose:
-                print('Converged to the required tolerance in {} iterations.'.format(iteration))
-            break
+    #if return_costs:
+        #return core, factors, cost_fct_vals, toc
+    #else:
+        #return core, factors
 
-    if return_costs:
-        return core, factors, cost_fct_vals, toc
-    else:
-        return core, factors
+#def one_sntd_step_mu(tensor, ranks, l2weights, in_core, in_factors, beta, norm_tensor,
+                   #fixed_modes, normalize, mode_core_norm, epsilon):
+    ## Copy
+    #core = in_core.copy()
+    #factors = in_factors.copy()
 
-def one_sntd_step_mu(tensor, ranks, muWeight, in_core, in_factors, beta, norm_tensor,
-                   fixed_modes, normalize, mode_core_norm, epsilon):
-    # Copy
-    core = in_core.copy()
-    factors = in_factors.copy()
+    ## Generating the mode update sequence
+    #modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
 
-    # Generating the mode update sequence
-    modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
+    #for mode in modes_list:
+        #factors[mode] = mu.mu_betadivmin(factors[mode], tl.unfold(tl.tenalg.multi_mode_dot(core, factors, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weights[mode+1])
 
-    for mode in modes_list:
-        factors[mode] = mu.mu_betadivmin(factors[mode], tl.unfold(tl.tenalg.multi_mode_dot(core, factors, skip = mode), mode), tl.unfold(tensor,mode), beta, muWeight[mode+1])
+    #core = mu.mu_tensorial(core, factors, tensor, beta, l2weights[0])
 
-    core = mu.mu_tensorial(core, factors, tensor, beta, muWeight[0])
-
-    if normalize[-1]:
-        unfolded_core = tl.unfold(core, mode_core_norm)
-        for idx_mat in range(unfolded_core.shape[0]):
-            if tl.norm(unfolded_core[idx_mat]) != 0:
-                unfolded_core[idx_mat] = unfolded_core[idx_mat] / tl.norm(unfolded_core[idx_mat], 2)
-        core = tl.fold(unfolded_core, mode_core_norm, core.shape)
+    #if normalize[-1]:
+        #unfolded_core = tl.unfold(core, mode_core_norm)
+        #for idx_mat in range(unfolded_core.shape[0]):
+            #if tl.norm(unfolded_core[idx_mat]) != 0:
+                #unfolded_core[idx_mat] = unfolded_core[idx_mat] / tl.norm(unfolded_core[idx_mat], 2)
+        #core = tl.fold(unfolded_core, mode_core_norm, core.shape)
 
 
-    reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
+    #reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
 
-    cost_fct_val = beta_div.beta_divergence(tensor, reconstructed_tensor, beta)+muWeight[0]*tl.norm(core, order=1)
-    for mode in modes_list:
-        cost_fct_val = cost_fct_val+1/2*muWeight[mode+1]*np.linalg.norm(factors[mode],'fro')**2
+    #cost_fct_val = beta_div.beta_divergence(tensor, reconstructed_tensor, beta)+l2weights[0]*tl.norm(core, order=1)
+    #for mode in modes_list:
+        #cost_fct_val = cost_fct_val+1/2*l2weights[mode+1]*np.linalg.norm(factors[mode],'fro')**2
 
-    return core, factors, cost_fct_val #  exhaustive_rec_error
+    #return core, factors, cost_fct_val #  exhaustive_rec_error
 
 
 

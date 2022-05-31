@@ -22,17 +22,17 @@ def gamma(beta):
     else:
         return 1
 
-def mu_betadivmin(U, V, M, beta, muWeight):
+def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12):
     """
     ============================================================
     Sparse Beta-Divergence NMF solved with Multiplicative Update
     ============================================================
     Computes an approximate solution of a beta-NMF
-    [3] with the Multiplicative Update rule [2,3].
+    [3] with ONE STEP of the Multiplicative Update rule [2,3].
     M is m by n, U is m by r, V is r by n.
     All matrices are nonnegative componentwise.
-    We are interested in solving:
-            min_{U >= 0} beta_div(M, UV)+1/2 \mu \|U\|_F^2
+    We are interested in reducing the loss:
+            f(U >= 0) = beta_div(M, UV)+1/2 \mu \|U\|_F^2
     The update rule of this algorithm is inspired by [3].
     Parameters
     ----------
@@ -44,8 +44,15 @@ def mu_betadivmin(U, V, M, beta, muWeight):
         The initial matrix, to approach.
     beta : Nonnegative float
         The beta coefficient for the beta-divergence.
-    muWeight : Positive scalar
-        The penalty weight
+    l2weight : positive float
+        The l2 penalty weight. Prevents the norm of factors to go to infinity under l1 regularisation on other factors. Only implemented for beta=1.
+        Default: None
+    l1weight : positive float
+        The l1 penalty weight. Induces sparsity on the factor.
+        Default: None
+    epsilon: float
+        Upper bound on the factors
+        Default: 1e-12
     Returns
     -------
     U: array
@@ -65,17 +72,28 @@ def mu_betadivmin(U, V, M, beta, muWeight):
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
 
-    epsilon = 1e-12
 
     K = np.dot(U,V)
 
+    if not l2weight and not l1weight:
+        raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
+
     if beta == 1:
-        e = np.ones(np.shape(M))
-        C = np.dot(e,V.T)
-        K_inverted = K**(-1)
-        S = 4*muWeight*U*np.dot((K_inverted*M),V.T)
-        denom = 2*muWeight
-        return np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon)
+        # If l2 weight is not used, we default the l1 formula. If l1=0 also it boils down to usual MU. This is faster than the l2 default.
+        if not l2weight:
+            K_inverted = K**(-1)
+            line = np.sum(V.T,axis=0)
+            # todo check l1 update formula
+            denom = np.array([line for i in range(np.shape(K)[0])]) + l1weight
+            return np.maximum(U * (np.dot((K_inverted*M),V.T) / denom),epsilon)
+        else:
+            e = np.ones(np.shape(M))
+            C = np.dot(e,V.T)
+            K_inverted = K**(-1)
+            S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
+            denom = 2*l2weight
+            return np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon)
+        # TODO: l1 for other betas
     elif beta == 2:
         denom = np.dot(K,V.T)
         return np.maximum(U * (np.dot(M,V.T) / denom), epsilon)
@@ -86,7 +104,7 @@ def mu_betadivmin(U, V, M, beta, muWeight):
         denom = np.dot(K**(beta-1),V.T)
         return np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
 
-def mu_tensorial(G, factors, tensor, beta, muWeight):
+def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12):
     """
     This function is used to update the core G of a
     nonnegative Tucker Decomposition (NTD) [1] with beta-divergence [3]
@@ -101,8 +119,13 @@ def mu_tensorial(G, factors, tensor, beta, muWeight):
         The tensor to estimate with NTD.
     beta : Nonnegative float
         The beta coefficient for the beta-divergence.
-    muWeight : Positive scalar
-        The penalty weight
+    l2weight : positive float
+        The l2 penalty weight. Prevents the norm of core to go to infinity under l1 regularisation on other factors. Only implemented for beta=1.
+    l1weight : positive float
+        The l1 penalty weight. Induces sparsity on the core.
+    epsilon: float
+        Upper bound on the factors
+        Default: 1e-12
     Returns
     -------
     G : tensorly tensor
@@ -118,10 +141,11 @@ def mu_tensorial(G, factors, tensor, beta, muWeight):
     vol. 23, no. 9, pp. 2421–2456, 2011.
     """
 
+    # TODO implement l2 here as well
+
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
 
-    epsilon = 1e-12
     K = tl.tenalg.multi_mode_dot(G,factors)
 
     if beta == 1:
@@ -140,4 +164,5 @@ def mu_tensorial(G, factors, tensor, beta, muWeight):
         L1 = K**(beta-1)
         L2 = K**(beta-2) * tensor
 
-    return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (np.ones(np.shape(G))*muWeight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+    #return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (np.ones(np.shape(G))*l1weight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+    return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)

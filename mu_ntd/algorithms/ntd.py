@@ -103,9 +103,6 @@ def ntd_apgd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_it
         Will only be useful if the last element of the previous "normalise" argument is set to True.
         Indexes of the modes start at 0.
         Default: None
-    hals: boolean
-        Whether to run hals (true) or gradient (false) update on the core.
-        Default (and recommanded): false
     verbose: boolean
         Indicates whether the algorithm prints the monitoring of the convergence
         or not
