@@ -22,13 +22,15 @@ if __name__ == "__main__":
     V_lines = 101
     W_lines = 20
     ranks = [8,12,10]
+    # Noise level
+    sigma = 1e-2
     # Generation of the input data tensor T
     factors_0 = []
     factors_0.append(np.random.rand(U_lines, ranks[0]))
     factors_0.append(np.random.rand(V_lines, ranks[1]))
     factors_0.append(np.random.rand(W_lines, ranks[2]))
     core_0 = np.random.rand(ranks[0], ranks[1], ranks[2])
-    T = tl.tenalg.multi_mode_dot(core_0, factors_0) + 1e-2 * np.random.rand(U_lines, V_lines, W_lines)
+    T = tl.tenalg.multi_mode_dot(core_0, factors_0) + sigma * np.random.rand(U_lines, V_lines, W_lines)
   
     # Random initialization for the NTD
     factors_0 = []

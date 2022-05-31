@@ -4,7 +4,7 @@
 # Python classics
 import numpy as np
 import tensorly as tl
-import SparseMu_ntd.algorithms.Sparse_ntd as SNTD
+import mu_ntd.algorithms.Sparse_ntd as SNTD
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -16,6 +16,8 @@ if __name__ == "__main__":
     V_lines = 200
     W_lines = 100
     ranks = [4,6,5]
+    # Noise level
+    sigma = 1e-2
     # Generation of the input data tensor T
     factors_0 = []
     factors_0.append(np.random.rand(U_lines, ranks[0]))
@@ -24,7 +26,7 @@ if __name__ == "__main__":
     core_0 = np.random.rand(ranks[0], ranks[1], ranks[2])
     factors_GT = factors_0
     core_GT = core_0
-    T = tl.tenalg.multi_mode_dot(core_0, factors_0) + 1e-2 * np.random.rand(U_lines, V_lines, W_lines) #1e-2
+    T = tl.tenalg.multi_mode_dot(core_0, factors_0) + sigma * np.random.rand(U_lines, V_lines, W_lines) #1e-2
   
     # Random initialization for the NTD
     factors_0 = []
