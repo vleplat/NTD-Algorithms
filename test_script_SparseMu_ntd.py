@@ -67,9 +67,12 @@ if __name__ == "__main__":
     print(f"MU, Beta = 1       : {tl.norm(T-tl.tenalg.multi_mode_dot(core, factors))/tl.norm(T)*100} %")
     print(f"MU - HER, Beta = 1 : {tl.norm(T-tl.tenalg.multi_mode_dot(core_HER, factors_HER))/tl.norm(T)*100} %")
     
+    # first iteration shown?
+    it1 = 0
+
     plt.figure(1)
-    plt.plot(cost_fct_vals[4:-1], color='blue', label='MU HER off')
-    plt.plot(cost_fct_vals_HER[4:-1], color='black', label='MU HER on')
+    plt.semilogy(cost_fct_vals[it1:], color='blue', label='MU HER off')
+    plt.semilogy(cost_fct_vals_HER[it1:], color='black', label='MU HER on')
     plt.xlabel('Iteration number')
     plt.ylabel('Objective function')
     plt.title('Sparse beta-div NTD')
@@ -77,8 +80,8 @@ if __name__ == "__main__":
     plt.show()
     
     plt.figure(2)
-    plt.plot(toc[4:-1],cost_fct_vals[4:-1], color='blue', label='MU HER off')
-    plt.plot(toc_HER[4:-1],cost_fct_vals_HER[5:-1], color='black', label='MU HER on')
+    plt.semilogy(toc[it1:],cost_fct_vals[it1:], color='blue', label='MU HER off')
+    plt.semilogy(toc_HER[it1:],cost_fct_vals_HER[it1:], color='black', label='MU HER on')
     plt.xlabel('CPU time')
     plt.ylabel('Objective function')
     plt.title('Sparse beta-div NTD')
