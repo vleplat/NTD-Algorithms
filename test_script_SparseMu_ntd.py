@@ -18,9 +18,9 @@ if __name__ == "__main__":
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Data generation
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    U_lines = 250
-    V_lines = 200
-    W_lines = 100
+    U_lines = 100
+    V_lines = 101
+    W_lines = 20
     ranks = [4,6,5]
     # Noise level
     sigma = 1e-2
@@ -44,20 +44,19 @@ if __name__ == "__main__":
     # Solver parameters
     n_iter_max = 200
     beta = 1
-    muWeight = np.array([0.2, 0.15, 0.15, 0.15])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
+    l2weight = np.array([0, 0.15, 0.15, 0.15])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
+    l1weight = np.array([0.2, 0, 0, 0])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Call of solvers
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     
     # ### Beta = 1 - MU no extrapolation
-    core, factors, cost_fct_vals, toc = SNTD.sntd_mu(T, ranks, muWeight, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6, beta = beta,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True, extrapolate=False)
+    core, factors, cost_fct_vals, toc, alpha = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, tol = 1e-6, beta = beta,
+                                                fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=False)
     # ### Beta = 1 - MU extrapolation
-    core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha = SNTD.sntd_mu(T, ranks, muWeight, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = beta,
-                                                sparsity_coefficients = [None, None, None, None], fixed_modes = [], normalize = [False, False, False, False],
-                                                verbose = True, return_costs = True, extrapolate=True)
+    core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_0, factors_0 = factors_0, n_iter_max = n_iter_max, beta = beta,
+                                                fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=True)
     
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Reporting

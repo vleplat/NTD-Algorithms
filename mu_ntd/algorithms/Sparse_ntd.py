@@ -21,7 +21,7 @@ import numpy as np
 
 
 ######################### Temporary, to test mu and not break everything
-def sntd_mu(tensor, ranks, l2weights, l1weights=None, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
+def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            fixed_modes = [], normalize = [], mode_core_norm = None, beta = 2,
            verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12):
     """
@@ -180,13 +180,13 @@ def sntd_mu(tensor, ranks, l2weights, l1weights=None, init = "random", core_0 = 
             print("The " + str(i) + "-th mode rank was larger than the shape of the tensor, which is incorrect. Set to the shape of the tensor")
 
     # Processing l1 and l2 coefficients
-    if l1weights == None:
+    if l1weights is None:
         l1weights = [None for i in range(nb_modes + 1)]
     if len(l1weights) != nb_modes + 1:
         print("Irrelevant number of l1weights coefficient (different from the number of modes + 1 for the core), they have been set to None.")
         l1weights = [None for i in range(nb_modes + 1)]
     
-    if l2weights == None:
+    if l2weights is None:
         l2weights = [None for i in range(nb_modes + 1)]
     if len(l2weights) != nb_modes + 1:
         print("Irrelevant number of l2weights coefficient (different from the number of modes + 1 for the core), they have been set to None.")
@@ -194,8 +194,8 @@ def sntd_mu(tensor, ranks, l2weights, l1weights=None, init = "random", core_0 = 
 
     # Checking if l1 and l2 regularisation has been used on the same mode.
     # l1 and l2 being true is the problem
-    truthtable = l1weights & l2weights
-    if truthtable.any():
+    truthtable = [l1weights[i] and l2weights[i] for i in range(len(l1weights))]
+    if any(truthtable):
         raise err.InvalidArgumentValue("A l2 and l1 regularization have been imposed on the same mode, which is not supported at the moment")
 
     # A bunch of checks for the inputs
@@ -387,7 +387,7 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
     # TODO: discuss OK
     cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ l2weights[0]*tl.norm(core_n_up) + l1weights[0]*tl.norm(core_n_up,1)
     for mode in modes_list:
-        cost_fycn = cost_fycn + 1/2*l2weights[mode+1]*tl.norm(factors_n_up[mode],'fro')**2 + l1weights[mode+1]*tl.norm(factors_n_up[mode],1)
+        cost_fycn = cost_fycn + 1/2*l2weights[mode+1]*tl.norm(factors_n_up[mode])**2 + l1weights[mode+1]*tl.sum(factors_n_up[mode])
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
