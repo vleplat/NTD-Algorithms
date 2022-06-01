@@ -54,11 +54,11 @@ factors_init.append(np.random.rand(W_lines, ranks[2]))
 core_init = np.random.rand(ranks[0], ranks[1], ranks[2])
 
 # Solver parameters
-n_iter_max = 500
+n_iter_max = 1000
 beta = 1
-iter_inner = 3
-l2weight = np.array([0, 0, 1, 0])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
-l1weight = np.array([1, 1, 0, 1])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
+iter_inner = 5
+l2weight = np.array([0, 0, 0, 0])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
+l1weight = np.array([0, 0, 0, 0])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Call of solvers
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -78,12 +78,12 @@ core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER = SNTD.sntd_mu(T, r
 # TODO use Tensorly viz
 
 # normalisation
-#for i in range(len(factors)):
-#    factors[i] = factors[i]/np.linalg.norm(factors[i],axis=0)
-#    factors_HER[i] = factors_HER[i]/np.linalg.norm(factors_HER[i],axis=0)
-#    factors_0[i] = factors_0[i]/np.linalg.norm(factors_0[i],axis=0)
+for i in range(len(factors)):
+    factors[i] = factors[i]/np.linalg.norm(factors[i],axis=0)
+    factors_HER[i] = factors_HER[i]/np.linalg.norm(factors_HER[i],axis=0)
+    factors_0[i] = factors_0[i]/np.linalg.norm(factors_0[i],axis=0)
 
-#print(factors[2].T@factors_0[2])
+print(factors[2].T@factors_0[2])
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Reporting

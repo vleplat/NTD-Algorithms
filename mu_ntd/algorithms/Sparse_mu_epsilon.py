@@ -78,9 +78,6 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
 
-    if not l2weight and not l1weight:
-        raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
-
     # Precomputations, outside inner loop
     if beta==1:
         C = np.sum(V.T,axis=0)
