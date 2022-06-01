@@ -18,9 +18,9 @@ print("Running...")
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Data generation
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-U_lines = 100
-V_lines = 101
-W_lines = 20
+U_lines = 200
+V_lines = 201
+W_lines = 50
 ranks = [4,6,5]
 # Noise level
 sigma = 1e-2
@@ -54,8 +54,9 @@ factors_init.append(np.random.rand(W_lines, ranks[2]))
 core_init = np.random.rand(ranks[0], ranks[1], ranks[2])
 
 # Solver parameters
-n_iter_max = 2000
+n_iter_max = 500
 beta = 1
+iter_inner = 3
 l2weight = np.array([0, 0, 1, 0])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
 l1weight = np.array([1, 1, 0, 1])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -65,24 +66,24 @@ l1weight = np.array([1, 1, 0, 1])  #(\mu_g, \mu_W, \mu_H, \mu_Q)
 
 # ### Beta = 1 - MU no extrapolation
 core, factors, cost_fct_vals, toc, alpha = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                            fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=False)
+                                            fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=False, iter_inner=iter_inner)
 # ### Beta = 1 - MU extrapolation
 core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                            fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=True)
+                                            fixed_modes = [], normalize = None, verbose = True, return_costs = True, extrapolate=True, iter_inner=iter_inner)
 
 #----------------------------------------------
 # Post-processing for checking identification
 #----------------------------------------------
 
-# Todo use Tensorly viz
+# TODO use Tensorly viz
 
 # normalisation
-for i in range(len(factors)):
-    factors[i] = factors[i]/np.linalg.norm(factors[i],axis=0)
-    factors_HER[i] = factors_HER[i]/np.linalg.norm(factors_HER[i],axis=0)
-    factors_0[i] = factors_0[i]/np.linalg.norm(factors_0[i],axis=0)
+#for i in range(len(factors)):
+#    factors[i] = factors[i]/np.linalg.norm(factors[i],axis=0)
+#    factors_HER[i] = factors_HER[i]/np.linalg.norm(factors_HER[i],axis=0)
+#    factors_0[i] = factors_0[i]/np.linalg.norm(factors_0[i],axis=0)
 
-print(factors[2].T@factors_0[2])
+#print(factors[2].T@factors_0[2])
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Reporting
