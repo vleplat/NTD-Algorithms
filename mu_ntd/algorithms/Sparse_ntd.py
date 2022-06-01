@@ -23,7 +23,7 @@ import numpy as np
 ######################### Temporary, to test mu and not break everything
 def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            fixed_modes = [], normalize = [], mode_core_norm = None, beta = 2,
-           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12):
+           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12, iter_inner=20):
     """
     ======================================
     Sparse Nonnegative Tucker Decomposition (sNTD) with beta-div loss
@@ -128,6 +128,9 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     epsilon: float
         Lower-bound for the values in factors for MU.
         Default: 1e-12
+    iter_inner: int
+        Number of inner iterations for each factor/core update.
+        Default: 20
 
     Returns
     -------
@@ -259,7 +262,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     # Check done correctly
     return compute_sntd_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
                        fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
-                       verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate)
+                       verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner)
     #else:
     #    return compute_sntd_mu(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max, tol=tol,
     #                   fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
@@ -268,7 +271,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
 
 def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
            fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
-           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False):
+           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=20):
 
     # initialisation - store the input varaibles
     core = core_in.copy()
@@ -318,7 +321,7 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
 
         # One pass of MU on each updated mode
         core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax = one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, core_n, factors_n, core_y, factors_y, beta, norm_tensor,
-                                              fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals)
+                                              fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals, iter_inner)
 
         # Store the computation time, obj value, alpha
         toc.append(time.time() - tic)
@@ -350,7 +353,8 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
         return core, factors
 
 def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factors, in_core_n, in_factors_n, in_core_y, in_factors_y, beta, norm_tensor,
-                   fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase, cost_fct_vals):
+                   fixed_modes, normalize, mode_core_norm, alpha, cost_fct_vals_fycn, epsilon, alpha0, alphamax, alpha_increase, alpha_reduce, alphamax_increase,
+                   cost_fct_vals, iter_inner):
     # No Copy
     core = in_core#.copy()
     factors = in_factors#.copy()
@@ -373,11 +377,11 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
     # Compute the extrapolated update for the factors.
     # Note that when alpha is zero, factors_y = factors_n.
     for mode in modes_list:
-        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weight=l2weights[mode+1], l1weight=l1weights[mode+1], epsilon=epsilon)
+        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weight=l2weights[mode+1], l1weight=l1weights[mode+1], epsilon=epsilon, iter_inner=iter_inner)
         factors_y[mode] = np.maximum(factors_n_up[mode]+alpha*(factors_n_up[mode]-in_factors_n[mode]),epsilon)
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
-    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[0], l1weight=l1weights[0], epsilon=epsilon)
+    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[0], l1weight=l1weights[0], epsilon=epsilon, iter_inner=iter_inner)
     core_y = np.maximum(core_n_up+alpha*(core_n_up-in_core_n),epsilon) #TODO check bug correction core_n_up?
 
     # Compute the value of the objective (loss) function at the

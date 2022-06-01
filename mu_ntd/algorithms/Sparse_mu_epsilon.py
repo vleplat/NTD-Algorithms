@@ -22,7 +22,7 @@ def gamma(beta):
     else:
         return 1
 
-def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12):
+def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20):
     """
     ============================================================
     Sparse Beta-Divergence NMF solved with Multiplicative Update
@@ -34,6 +34,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12):
     We are interested in reducing the loss:
             f(U >= 0) = beta_div(M, UV)+1/2 \mu \|U\|_F^2
     The update rule of this algorithm is inspired by [3].
+
     Parameters
     ----------
     U : m-by-r array
@@ -53,6 +54,10 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12):
     epsilon: float
         Upper bound on the factors
         Default: 1e-12
+    iter_inner: int
+        Number of updates/loops in this call
+        Default: 20
+
     Returns
     -------
     U: array
@@ -69,46 +74,63 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12):
     vol. 23, no. 9, pp. 2421–2456, 2011.
     """
 
+    # Checks
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
-
-
-    K = np.dot(U,V)
 
     if not l2weight and not l1weight:
         raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
 
-    if beta == 1:
-        # If l2 weight is not used, we default the l1 formula. If l1=0 also it boils down to usual MU. This is faster than the l2 default.
-        if not l2weight:
-            K_inverted = K**(-1)
-            line = np.sum(V.T,axis=0)
-            # todo check l1 update formula
-            denom = np.array([line for i in range(np.shape(K)[0])]) + l1weight
-            return np.maximum(U * (np.dot((K_inverted*M),V.T) / denom),epsilon)
-        else:
-            e = np.ones(np.shape(M))
-            C = np.dot(e,V.T)
-            K_inverted = K**(-1)
-            S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
-            denom = 2*l2weight
-            return np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon)
-        # TODO: l1 for other betas
-    elif beta == 2:
-        denom = np.dot(K,V.T)
-        return np.maximum(U * (np.dot(M,V.T) / denom), epsilon)
-    elif beta == 3:
-        denom = np.dot(K**2,V.T)
-        return np.maximum(U * (np.dot((K * M),V.T) / denom) ** gamma(beta), epsilon)
-    else:
-        denom = np.dot(K**(beta-1),V.T)
-        return np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
+    # Precomputations, outside inner loop
+    if beta==1:
+        C = np.sum(V.T,axis=0)
+    if beta==2:
+        VVt = V@V.T
+        MVt = M@V.T
 
-def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12):
+    for iters in range(iter_inner):
+
+        if beta == 1:
+            K = np.dot(U,V)
+            # If l2 weight is not used, we default the l1 formula. If l1=0 also it boils down to usual MU. This is faster than the l2 default.
+            if not l2weight:
+                K_inverted = K**(-1)
+                #line = np.sum(V.T,axis=0)
+                # todo check l1 update formula
+                denom = np.array([C for i in range(np.shape(K)[0])]) + l1weight
+                U = np.maximum(U * (np.dot((K_inverted*M),V.T) / denom),epsilon)
+            else:
+                #e = np.ones(np.shape(M))
+                #C = np.dot(e,V.T)
+                K_inverted = K**(-1)
+                S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
+                denom = 2*l2weight
+                U = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon) # TODO: check broadcasting
+            # TODO: l1 for other betas
+        elif beta == 2:
+            U = np.maximum(U * (MVt / U@VVt), epsilon)
+        elif beta == 3:
+            K = np.dot(U,V)
+            denom = np.dot(K**2,V.T)
+            U = np.maximum(U * (np.dot((K * M),V.T) / denom) ** gamma(beta), epsilon)
+        else:
+            K = np.dot(U,V)
+            denom = np.dot(K**(beta-1),V.T)
+            U = np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
+
+        # stopping condition dynamic if allowed
+        #TODO
+        if False:
+            print('Stopped inner iters, not implemented')
+            break
+    return U
+
+def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20):
     """
     This function is used to update the core G of a
     nonnegative Tucker Decomposition (NTD) [1] with beta-divergence [3]
     and Multiplicative Updates [2] and sparsity penalty.
+
     Parameters
     ----------
     G : tensorly tensor
@@ -126,6 +148,10 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     epsilon: float
         Upper bound on the factors
         Default: 1e-12
+    iter_inner: int
+        Number of updates/loops in this call
+        Default: 20
+
     Returns
     -------
     G : tensorly tensor
@@ -142,27 +168,49 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     """
 
     # TODO implement l2 here as well
+    # TODO factorize reusable terms for beta=2    # Checks
 
+    # Checks
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
 
-    K = tl.tenalg.multi_mode_dot(G,factors)
+    #if not l2weight and not l1weight:
+    #    raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
 
-    if beta == 1:
-        L1 = np.ones(np.shape(K))
-        L2 = K**(-1) * tensor
+    # Precomputations, outside inner loop
+    if beta==1:
+        # faster method without creating ones tensor
+        sums = [np.sum(fac,axis=0) for fac in factors]
+        C = tl.cp_tensor.cp_to_tensor(np.ones(len(sums), sums))
+        #L1 = np.ones(np.shape(tensor))
+        #C = tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors])
+    if beta==2:
+        VVt = [fac@fac.T for fac in factors]
+        MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
 
-    elif beta == 2:
-        L1 = K
-        L2 = np.ones(np.shape(K)) * tensor
+    for iter in range(iter_inner):
+        if beta == 1:
+            K = tl.tenalg.multi_mode_dot(G,factors)
+            L2 = K**(-1) * tensor
+            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) , epsilon)
 
-    elif beta == 3:
-        L1 = K**2
-        L2 = K * tensor
+        elif beta == 2:
+            K = tl.tenalg.multi_mode_dot(G,factors)
+            G = np.maximum(G * (MVt  / (l1weight +
+            tl.tenalg.multi_mode_dot(G, VVt))) ** gamma(beta) , epsilon)
 
-    else:
-        L1 = K**(beta-1)
-        L2 = K**(beta-2) * tensor
+        elif beta == 3:
+            K = tl.tenalg.multi_mode_dot(G,factors)
+            L1 = K**2
+            L2 = K * tensor
+            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+
+        else:
+            L1 = K**(beta-1)
+            L2 = K**(beta-2) * tensor
+            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
 
     #return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (np.ones(np.shape(G))*l1weight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
-    return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+    return G
