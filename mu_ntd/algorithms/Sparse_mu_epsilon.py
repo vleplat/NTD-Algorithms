@@ -180,9 +180,9 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     # Precomputations, outside inner loop
     if beta==1:
         # faster method without creating ones tensor
-        #sums = [np.sum(fac,axis=0) for fac in factors]
-        #C = tl.cp_tensor.cp_to_tensor((None,np.array(sums)))
-        C = tl.tenalg.multi_mode_dot(np.ones(np.shape(tensor)), [fac.T for fac in factors])
+        sums = [np.sum(fac,axis=0) for fac in factors]
+        C = tl.tenalg.outer(sums)
+        #C = tl.tenalg.multi_mode_dot(np.ones(np.shape(tensor)), [fac.T for fac in factors])
     if beta==2:
         VVt = [fac@fac.T for fac in factors]
         MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
