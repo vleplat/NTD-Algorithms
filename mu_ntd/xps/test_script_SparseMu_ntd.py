@@ -5,8 +5,7 @@
 # TODO:
 # - heuristic Gillis-like for stopping inner iters ?
 # - L2 reg on core --> Valou
-# - L1 for beta <> 1
-# - Industry-scale tests
+# - L1 et L2 for beta <> 1
 
 # Python classics
 import numpy as np
