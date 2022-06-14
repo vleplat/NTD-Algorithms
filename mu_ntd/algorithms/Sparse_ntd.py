@@ -292,7 +292,8 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
     # the extrapolation parameters
     if extrapolate:
         alpha=0.05
-        print('Initial Alpha={}'.format(alpha))
+        if verbose:
+            print('Initial Alpha={}'.format(alpha))
 
         alpha0 = alpha             #extrapolation parameter setting from last improvement
         alphamax = 1               #1 but Andy told us to increase it to have fun, let us see
@@ -302,7 +303,8 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
     else:
         # no extrapolation
         alpha=0
-        print('Initial Alpha={}'.format(alpha))
+        if verbose:
+            print('Initial Alpha={}'.format(alpha))
 
         alpha0 = alpha             #extrapolation parameter setting from last improvement
         alphamax = 0               #1 but Andy told us to increase it to have fun, let us see
@@ -400,7 +402,7 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
         # scheme.
         factors_y = in_factors_n.copy()
         core_y = in_core_n.copy()
-        alphamax = alpha0
+        alphamax = alpha0 
         alpha = alpha_reduce*alpha
     else:
         # The solution improved; retain the basic co-ordinate ascent
@@ -410,6 +412,7 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
         alpha = np.minimum(alphamax,alpha*alpha_increase)
         alpha0 = alpha
         alphamax = np.minimum(0.99,alphamax_increase*alphamax)
+        #alphamax = np.minimum(2,alphamax_increase*alphamax)
 
     # If the solution improves the "current best" estimate, update the
     # current best estimate using the non-extrapolated estimates of the
