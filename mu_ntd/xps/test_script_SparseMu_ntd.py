@@ -30,8 +30,8 @@ variables={
 #ranks=[[4,5,6],[10,2,2],[15,15,15]],
 #sigma=[0,1e-2],
 #iter_inner= [1,3,10])
-@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/", verbose=True,
-                nb_seeds=4,**variables)
+@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/", name_store="run-01",
+                verbose=True, nb_seeds=4,**variables)
 def script_run(
     U_lines = 100,
     V_lines = 101,

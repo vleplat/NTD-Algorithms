@@ -5,7 +5,7 @@ import shootout.methods.plotters as pt
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_pickle("Results/run-2022-06-14 11:32")
+df = pd.read_pickle("Results/run-2022-06-14-big")
 
 # 1. Convergence Plots
 
