@@ -103,16 +103,15 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                 S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
                 denom = 2*l2weight
                 U = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon) # TODO: check broadcasting
-            # TODO: l1 for other betas
         elif beta == 2:
-            U = np.maximum(U * (MVt / U@VVt), epsilon)
+            U = np.maximum(U * (MVt / (U@VVt + l1weight)), epsilon)
         elif beta == 3:
             K = np.dot(U,V)
-            denom = np.dot(K**2,V.T)
+            denom = np.dot(K**2,V.T) + l1weight
             U = np.maximum(U * (np.dot((K * M),V.T) / denom) ** gamma(beta), epsilon)
         else:
             K = np.dot(U,V)
-            denom = np.dot(K**(beta-1),V.T)
+            denom = np.dot(K**(beta-1),V.T) + l1weight
             U = np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
 
         # stopping condition dynamic if allowed
@@ -186,10 +185,18 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
 
     for iter in range(iter_inner):
         if beta == 1:
-            K = tl.tenalg.multi_mode_dot(G,factors)
-            L2 = K**(-1) * tensor
-            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) , epsilon)
-
+            if not l2weight:
+                K = tl.tenalg.multi_mode_dot(G,factors)
+                L2 = K**(-1) * tensor
+                G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) , epsilon)
+                
+            else:
+                K = tl.tenalg.multi_mode_dot(G,factors)
+                L2 = K**(-1) * tensor
+                S = 4*l2weight*G*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
+                denom = 2*l2weight
+                G = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon) 
+ 
         elif beta == 2:
             K = tl.tenalg.multi_mode_dot(G,factors)
             G = np.maximum(G * (MVt  / (l1weight +

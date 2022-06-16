@@ -10,6 +10,7 @@ Created on Tue Jun 11 16:52:21 2019
 
 import numpy as np
 import time
+from tqdm import tqdm
 import tensorly as tl
 from tensorly.decomposition import tucker as tl_tucker
 
@@ -319,7 +320,7 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
     factors_y = factors.copy()  # extrapolated core side estimates
 
     # Iterate over one step of NTD
-    for iteration in range(n_iter_max):
+    for iteration in tqdm(range(n_iter_max)):
 
         # One pass of MU on each updated mode
         core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax = one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, core_n, factors_n, core_y, factors_y, beta, norm_tensor,

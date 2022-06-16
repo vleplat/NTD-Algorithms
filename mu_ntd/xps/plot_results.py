@@ -5,7 +5,7 @@ import shootout.methods.plotters as pt
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_pickle("Results/run-2022-06-14-big")
+df = pd.read_pickle("Results/run-01")
 
 # 1. Convergence Plots
 
@@ -25,8 +25,8 @@ fig2 = px.line(df_conv, x="timings", y="errors", color="algorithm", log_y=True, 
 # 2. speed comparison plots (I don't know the real name)
 
 thresh = np.logspace(6,0,100)
-scores_time, scores_it,_,_ = pp.find_best_at_all_thresh(df, thresh, 2)
-fig3 = pt.plot_speed_comparison(thresh,scores_time,thresh,scores_it)
+#scores_time, scores_it,_,_ = pp.find_best_at_all_thresh(df, thresh, 2)
+#fig3 = pt.plot_speed_comparison(thresh,scores_time,thresh,scores_it)
 
 # 3. Errors at time or its
 
