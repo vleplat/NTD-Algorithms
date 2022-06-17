@@ -10,6 +10,7 @@ import numpy as np
 import time
 import tensorly as tl
 import nn_fac.errors as err
+import itertools as it
 
 def gamma(beta):
     """
@@ -79,6 +80,17 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
 
     # Precomputations, outside inner loop
+    if beta==0:
+        a_tilde = l2weight
+        c_tilde = 0
+        n_mode = 2
+        size_mat = U.shape
+        args=[]
+        for i in range(n_mode):
+            args.append(range(0, size_mat[i]))
+        # check
+        # gradU = np.zeros(np.shape(U))
+        
     if beta==1:
         C = np.sum(V.T,axis=0)
     if beta==2:
@@ -86,14 +98,28 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
         MVt = M@V.T
 
     for iters in range(iter_inner):
-
+        if beta == 0:
+            K = np.dot(U,V)
+            if not l2weight:
+                denom = np.dot(K**(beta-1),V.T) + l1weight
+                U = np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
+            else:
+                K_inverted = K**(-1)
+                Ks_inverted = K**(-2)
+                B_tilde=(K_inverted)@V.T
+                D_tilde=-1*((U)**2)*np.dot((Ks_inverted*M),V.T)
+                
+                for combination in it.product(*args):
+                    x, flag = cubic_roots(a_tilde, B_tilde[combination], c_tilde, D_tilde[combination]) 
+                    U[combination] =  np.maximum(x[0],epsilon)
+                    #gradU[combination] = (a_tilde)*U[combination]**3+(B_tilde[combination])*U[combination]**2+(c_tilde)*U[combination]+D_tilde[combination]
+                #print(tl.norm(gradU))
+            
         if beta == 1:
             K = np.dot(U,V)
             # If l2 weight is not used, we default the l1 formula. If l1=0 also it boils down to usual MU. This is faster than the l2 default.
             if not l2weight:
                 K_inverted = K**(-1)
-                #line = np.sum(V.T,axis=0)
-                # todo check l1 update formula
                 denom = np.array([C for i in range(np.shape(K)[0])]) + l1weight
                 U = np.maximum(U * (np.dot((K_inverted*M),V.T) / denom),epsilon)
             else:
@@ -178,7 +204,6 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
         # faster method without creating ones tensor
         sums = [np.sum(fac,axis=0) for fac in factors]
         C = tl.tenalg.outer(sums)
-        #C = tl.tenalg.multi_mode_dot(np.ones(np.shape(tensor)), [fac.T for fac in factors])
     if beta==2:
         VVt = [fac@fac.T for fac in factors]
         MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
@@ -210,10 +235,96 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
             tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
 
         else:
+            K = tl.tenalg.multi_mode_dot(G,factors)
             L1 = K**(beta-1)
             L2 = K**(beta-2) * tensor
             G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
             tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
 
-    #return np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (np.ones(np.shape(G))*l1weight + tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
     return G
+
+def cubic_roots(a_tilde, b_tilde, c_tilde, d_tilde):
+    """
+    ============================================================
+    Computing the roots of a 3-order polynomial equation
+    ============================================================
+    Computes the roots of the real positive roots of 
+    the polynomial of order 3 in the normal form:
+    x^3+px^2+qx+r
+
+    The computation method is inspired by [1].
+
+    Parameters
+    ----------
+    a_tilde : a positive scalar
+        coefficient of the cubic term
+    b_tilde : a scalar
+        coefficient of the quadratic term
+    c_tilde : a scalar
+        coefficient of the linear term
+    d_tilde : a scalar
+        constant term
+
+    Returns
+    -------
+    x: array
+        a 3-by-1 array or a 1-by-1 array containing the roots of x^3+px^2+qx+r
+    flag: binary number
+        1 if only one real root, o otherwise
+    References
+    ----------
+    [1]: Yan-Bin Jia, Roots of Polynomials,
+    Lecture notes, 2020.
+    """
+    
+    # Precomputations of p,q and r
+    p = (b_tilde)/a_tilde
+    q = c_tilde/a_tilde
+    r = (d_tilde)/a_tilde
+    
+    # Computation of the normal form y^3+ay+b=0 with following CV x=y-p/3
+    a = 1/3*(3*q-p**2)
+    b = 1/27*(2*p**3-9*p*q+27*r)
+    flag = 0
+    
+    # Computation and discussion based on the radicant
+    rad = (b**2)/4+(a**3)/27
+    x = []
+    
+    if rad > 0:
+        #print('radicant is positive')
+        A = np.cbrt(-b/2+np.sqrt(rad))
+        B = np.cbrt(-b/2-np.sqrt(rad))
+        x.append(A+B-p/3)
+        x.append(-1/2*(A+B)+np.sqrt(3)/2*(A-B)*1j-p/3)
+        x.append(-1/2*(A+B)-np.sqrt(3)/2*(A-B)*1j-p/3)
+        flag = 1
+    elif rad == 0:
+        #print('radicant is null')
+        if b > 0:
+            x.append(-2*np.sqrt(-a/3)-p/3)
+            x.append(np.sqrt(-a/3)-p/3)
+            x.append(np.sqrt(-a/3)-p/3)
+        elif b < 0:
+            x.append(2*np.sqrt(-a/3)-p/3)
+            x.append(-1*np.sqrt(-a/3)-p/3)
+            x.append(-1*np.sqrt(-a/3)-p/3)
+        else:
+            x.append(0-p/3)
+            x.append(0-p/3)
+            x.append(0-p/3)
+            
+    elif rad < 0:
+        #print('radicant is negative')
+        if b > 0:
+            phi = np.arccos(-1*np.sqrt((b**2/4)/(-a**3/27)))
+        elif b < 0:
+            phi = np.arccos(np.sqrt((b**2/4)/(-a**3/27)))
+        else:
+            phi = np.arccos(0)
+
+        for i in range(3):
+            x.append(2*np.sqrt(-a/3)*np.cos(phi/3+2*i*np.pi/3)-p/3)
+
+        
+    return x, flag
