@@ -106,8 +106,8 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
             else:
                 K_inverted = K**(-1)
                 Ks_inverted = K**(-2)
-                B_tilde=(K_inverted)@V.T
-                D_tilde=-1*((U)**2)*np.dot((Ks_inverted*M),V.T)
+                B_tilde = (K_inverted)@V.T
+                D_tilde = -1*((U)**2)*np.dot((Ks_inverted*M),V.T)
                 
                 for combination in it.product(*args):
                     x, flag = cubic_roots(a_tilde, B_tilde[combination], c_tilde, D_tilde[combination]) 
@@ -200,6 +200,16 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     #    raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
 
     # Precomputations, outside inner loop
+    if beta==0:
+        a_tilde = l2weight
+        c_tilde = 0
+        n_mode = len(G.shape)
+        size_tens = G.shape
+        args=[]
+        for i in range(n_mode):
+            args.append(range(0, size_tens[i]))
+        # check
+        #gradG = np.zeros(np.shape(G))
     if beta==1:
         # faster method without creating ones tensor
         sums = [np.sum(fac,axis=0) for fac in factors]
@@ -209,6 +219,21 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
         MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
 
     for iter in range(iter_inner):
+        if beta == 0:
+            K = tl.tenalg.multi_mode_dot(G,factors)
+            L1 = K**(-1)
+            L2 = K**(-2) * tensor
+            if not l2weight:
+                G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+                tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+            else:
+                B_tilde = tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors])
+                D_tilde = -1*((G)**2)*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
+                for combination in it.product(*args):
+                    x, flag = cubic_roots(a_tilde, B_tilde[combination], c_tilde, D_tilde[combination]) 
+                    G[combination] =  np.maximum(x[0],epsilon)
+                    #gradG[combination] = (a_tilde)*G[combination]**3+(B_tilde[combination])*G[combination]**2+(c_tilde)*G[combination]+D_tilde[combination]
+                #print(tl.norm(gradG))
         if beta == 1:
             if not l2weight:
                 K = tl.tenalg.multi_mode_dot(G,factors)
