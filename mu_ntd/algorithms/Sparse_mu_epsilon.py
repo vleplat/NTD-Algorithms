@@ -215,7 +215,7 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
         sums = [np.sum(fac,axis=0) for fac in factors]
         C = tl.tenalg.outer(sums)
     if beta==2:
-        VVt = [fac@fac.T for fac in factors]
+        VVt = [fac.T@fac for fac in factors]
         MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
 
     for iter in range(iter_inner):
