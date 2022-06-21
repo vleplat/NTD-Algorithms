@@ -14,7 +14,7 @@ import itertools as it
 
 def gamma(beta):
     """
-    Implements Sparse KL NTD (at the moment only for beta=1)
+    Implements Sparse KL NTD
     """
     if beta<1:
         return 1/(2-beta)
@@ -33,7 +33,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
     M is m by n, U is m by r, V is r by n.
     All matrices are nonnegative componentwise.
     We are interested in reducing the loss:
-            f(U >= 0) = beta_div(M, UV)+1/2 \mu \|U\|_F^2
+            f(U >= 0) = beta_div(M, UV)+1/2 \mu \|U\|_F^2 + 1/2 \lambda \|V\|_1
     The update rule of this algorithm is inspired by [3].
 
     Parameters
@@ -128,7 +128,8 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                 K_inverted = K**(-1)
                 S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
                 denom = 2*l2weight
-                U = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon) # TODO: check broadcasting
+                U = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon)
+        # TODO: implement beta=2
         elif beta == 2:
             U = np.maximum(U * (MVt / (U@VVt + l1weight)), epsilon)
         elif beta == 3:
@@ -188,9 +189,6 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     factorization with the beta-divergence, Neural Computation,
     vol. 23, no. 9, pp. 2421–2456, 2011.
     """
-
-    # TODO implement l2 here as well
-    # TODO factorize reusable terms for beta=2    # Checks
 
     # Checks
     if beta < 0:
@@ -300,6 +298,8 @@ def cubic_roots(a_tilde, b_tilde, c_tilde, d_tilde):
     ----------
     [1]: Yan-Bin Jia, Roots of Polynomials,
     Lecture notes, 2020.
+
+    TODO: Vectorize this
     """
     
     # Precomputations of p,q and r

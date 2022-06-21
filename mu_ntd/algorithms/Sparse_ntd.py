@@ -4,9 +4,6 @@ Created on Tue Jun 11 16:52:21 2019
 
 @author: veplat, based on amarmoret code
 """
-# TODO: 
-# - l1 not only on G
-
 
 import numpy as np
 import time
@@ -258,16 +255,9 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     else:
         raise err.InvalidInitializationType('Initialization type not understood: ' + init)
 
-    #if extrapolate:
-    # TODO: fuse in one function?? HER with alpha=0 is notHER
-    # Check done correctly
     return compute_sntd_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
                        fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
                        verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner)
-    #else:
-    #    return compute_sntd_mu(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max, tol=tol,
-    #                   fixed_modes = fixed_modes, normalize = normalize, mode_core_norm = mode_core_norm,
-    #                   verbose=verbose, return_costs=return_costs, beta = beta, deterministic = deterministic)
 
 
 def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
