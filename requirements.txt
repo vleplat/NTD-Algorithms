@@ -1,0 +1,15 @@
+numpy
+tensorly
+plotly
+kaleido
+ipython
+ipykernel
+matplotlib
+pandas
+tqdm
+nbformat
+-e .
+
+# Also manually go there and install the following:
+# shootout_folder/.
+# nn_fac_folder/.
