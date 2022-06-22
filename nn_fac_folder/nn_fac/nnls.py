@@ -22,7 +22,7 @@ def vector_nnls_solver(y, A, x, maxiter=500, atime=None, alpha=0.5, delta=0.01,
     
 
 def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01,
-                  sparsity_coefficient = None, normalize = False, nonzero = False):
+                  l1weight = None, l2weight = None, normalize = False, nonzero = False):
 ## Author : Axel Marmoret, based on Jeremy Cohen version's of Nicolas Gillis Matlab's code for HALS
 
     """
@@ -92,8 +92,12 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
         almost exact nnls solution, or larger (e.g. 1e-2) for inner loops
         of a PARAFAC computation.
         Default: 0.01
-    sparsity_coefficient: float or None
+    l1weight: float or None
         The coefficient controling the sparisty level in the objective function.
+        If set to None, the problem is solved unconstrained.
+        Default: None
+    l2weight: float or None
+        The coefficient controling the ridge penality in the objective function.
         If set to None, the problem is solved unconstrained.
         Default: None
     normalize: boolean
@@ -159,14 +163,17 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
 
             if UtU[k,k] != 0:
 
-                if sparsity_coefficient != None: # Using the sparsifying objective function
-                    deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - sparsity_coefficient * np.ones(n)) / UtU[k,k], -V[k,:])
-                    V[k,:] = V[k,:] + deltaV
+                #if sparsity_coefficient != None: # Using the sparsifying objective function
+                #deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight * np.ones(n)) / UtU[k,k], -V[k,:])
+                # TODO: note maths in manuscript
+                deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight - l2weight*V[k,:]) / (UtU[k,k]+l2weight), -V[k,:])
+                V[k,:] = V[k,:] + deltaV
 
-                else:
-                    deltaV = np.maximum((UtM[k,:]- UtU[k,:]@V) / UtU[k,k],-V[k,:])
-                    V[k,:] = V[k,:] + deltaV
+                #else:
+                #    #deltaV = np.maximum((UtM[k,:]- UtU[k,:]@V) / UtU[k,k],-V[k,:])
+                #    #V[k,:] = V[k,:] + deltaV
 
+                # TODO: this is not the loss anymore, change it
                 nodelta = nodelta + np.dot(deltaV, np.transpose(deltaV))
 
                 # Safety procedure, if columns aren't allow to be zero

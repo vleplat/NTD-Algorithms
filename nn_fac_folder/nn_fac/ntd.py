@@ -19,8 +19,8 @@ import nn_fac.beta_divergence as beta_div
 import numpy as np
 
 def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
-           sparsity_coefficients = [], fixed_modes = [], normalize = [], mode_core_norm = None,
-           verbose=False, return_costs=False, deterministic=False):
+           l1weights = [], l2weights = [], fixed_modes = [], normalize = [], mode_core_norm = None,
+           verbose=False, return_costs=False, deterministic=False, inner_iter=100):
 
     """
     ======================================
@@ -89,8 +89,12 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
         Between two succesive iterations, if the difference between 
         both cost function values is below this threshold, the algorithm stops.
         Default: 1e-6
-    sparsity_coefficients: list of float (as much as the number of modes + 1 for the core)
+    l1weights: list of float (as much as the number of modes + 1 for the core)
         The sparsity coefficients on each factor and on the core respectively.
+        If set to None or [], the algorithm is computed without sparsity
+        Default: []
+    l2weights: list of float (as much as the number of modes + 1 for the core)
+        The ridge coefficients on each factor and on the core respectively.
         If set to None or [], the algorithm is computed without sparsity
         Default: []
     fixed_modes: list of integers (between 0 and the number of modes + 1 for the core)
@@ -135,7 +139,7 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
     tensor = np.random.rand(80,100,120)
     ranks = [10,20,15]
     core, factors = NTD.ntd(tensor, ranks = ranks, init = "tucker", verbose = True, hals = False,
-                            sparsity_coefficients = [None, None, None, None], normalize = [True, True, False, True])
+                            l1weights = [None, None, None, None], normalize = [True, True, False, True])
 
     References
     ----------
@@ -219,13 +223,13 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
         raise err.InvalidInitializationType('Initialization type not understood: ' + init)
 
     return compute_ntd(tensor, ranks, core, factors, n_iter_max=n_iter_max, tol=tol,
-                       sparsity_coefficients = sparsity_coefficients, fixed_modes = fixed_modes, 
+                       l1weights = l1weights, l2weights = l2weights, fixed_modes = fixed_modes, 
                        normalize = normalize, mode_core_norm = mode_core_norm,
-                       verbose=verbose, return_costs=return_costs, deterministic = deterministic)
+                       verbose=verbose, return_costs=return_costs, deterministic = deterministic, inner_iter=inner_iter)
 
 def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
-           sparsity_coefficients = [], fixed_modes = [], normalize = [], mode_core_norm=None,
-           verbose=False, return_costs=False, deterministic=False):
+           l1weights = [], l2weights = [], fixed_modes = [], normalize = [], mode_core_norm=None,
+           verbose=False, return_costs=False, deterministic=False, inner_iter=100):
 
     """
     Computation of a Nonnegative Tucker Decomposition [1]
@@ -254,8 +258,12 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
         Between two iterations, if the difference between 
         both cost function values is below this threshold, the algorithm stops.
         Default: 1e-8
-    sparsity_coefficients: list of float (as much as the number of modes + 1 for the core)
+    l1weights: list of float (as much as the number of modes + 1 for the core)
         The sparsity coefficients on each factor and on the core respectively.
+        If set to None or [], the algorithm is computed without sparsity
+        Default: []
+    l2weights: list of float (as much as the number of modes + 1 for the core)
+        The ridge coefficients on each factor and on the core respectively.
         If set to None or [], the algorithm is computed without sparsity
         Default: []
     fixed_modes: list of integers (between 0 and the number of modes + 1 for the core)
@@ -320,9 +328,12 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
     # set init if problem
     #TODO: set them as warnings
     nb_modes = len(tensor.shape)
-    if sparsity_coefficients == None or len(sparsity_coefficients) != nb_modes + 1:
+    if l1weights == None or len(l1weights) != nb_modes + 1:
         print("Irrelevant number of sparsity coefficient (different from the number of modes + 1 for the core), they have been set to None.")
-        sparsity_coefficients = [None for i in range(nb_modes + 1)]
+        l1weights = [None for i in range(nb_modes + 1)]
+    if l2weights == None or len(l2weights) != nb_modes + 1:
+        print("Irrelevant number of ridge coefficient (different from the number of modes + 1 for the core), they have been set to None.")
+        l2weights = [None for i in range(nb_modes + 1)]
     if fixed_modes == None:
         fixed_modes = []
     if normalize == None or len(normalize) != nb_modes + 1:
@@ -351,10 +362,10 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
         # One pass of least squares on each updated mode
         if deterministic:
             core, factors, cost = one_ntd_step(tensor, ranks, core, factors, norm_tensor,
-                                          sparsity_coefficients, fixed_modes, normalize, mode_core_norm, alpha = math.inf)
+                                          l1weights, l2weights, fixed_modes, normalize, mode_core_norm, alpha = math.inf, inner_iter=inner_iter)
         else:
             core, factors, cost = one_ntd_step(tensor, ranks, core, factors, norm_tensor,
-                                          sparsity_coefficients, fixed_modes, normalize, mode_core_norm)
+                                          l1weights, l2weights, fixed_modes, normalize, mode_core_norm, inner_iter=inner_iter)
 
         # Store the computation time
         toc.append(time.time() - tic)
@@ -386,9 +397,12 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
 
 
 def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
-                 sparsity_coefficients, fixed_modes, normalize, mode_core_norm, 
-                 alpha=0.5, delta=0.01):
+                 l1weights, l2weights, fixed_modes, normalize, mode_core_norm, 
+                 alpha=0.5, delta=0, inner_iter=100):
     """
+    MODIFIED FROM NN_FAC ORIGINAL: DELTA=0 (NO DYNAMIC INNER STOPPING)
+    AND L1 L2 PROPER SUPPORT
+
     One pass of Hierarchical Alternating Least Squares update along all modes,
     and gradient update on the core,
     which decreases reconstruction error in Nonnegative Tucker Decomposition.
@@ -417,8 +431,10 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
         The values in in_factors are not modified.
     norm_tensor : float
         The Frobenius norm of the input tensor
-    sparsity_coefficients: list of float (as much as the number of modes + 1 for the core)
+    l1weights: list of float (as much as the number of modes + 1 for the core)
         The sparsity coefficients on each factor and on the core respectively.
+    l2weights: list of float (as much as the number of modes + 1 for the core)
+        The ridge coefficients on each factor and on the core respectively.
     fixed_modes: list of integers (between 0 and the number of modes + 1 for the core)
         Has to be set not to update a factor, taken in the order of modes and lastly on the core.
     normalize: list of boolean (as much as the number of modes + 1 for the core)
@@ -465,7 +481,8 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
 
     # Avoiding errors
     for fixed_value in fixed_modes:
-        sparsity_coefficients[fixed_value] = None
+        l1weights[fixed_value] = None
+        l2weights[fixed_value] = None
 
     # Copy
     core = in_core #in_core.copy()
@@ -515,8 +532,8 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
 
         # Call the hals resolution with nnls, optimizing the current mode
         factors[mode] = tl.transpose(nnls.hals_nnls_acc(UtM, UtU, tl.transpose(factors[mode]),
-               maxiter=100, atime=timer, alpha=alpha, delta=delta,
-               sparsity_coefficient = sparsity_coefficients[mode], normalize = normalize[mode])[0])
+               maxiter=inner_iter, atime=timer, alpha=alpha, delta=delta,
+               l1weight = l1weights[mode], l2weight = l2weights[mode], normalize = normalize[mode])[0])
 
     #refolded_tensor = tl.base.fold(unfolded_tensors[0], 0, tensor_shape)
 
@@ -545,15 +562,9 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
     upd_0 = 0
     upd = 1
 
-    if sparsity_coefficients[-1] is None:
-        sparse = 0
-    else:
-        sparse = sparsity_coefficients[-1]
-
-    # TODO: dynamic stopping criterion
-    # Maybe: try fast gradient instead of gradient
-    while cnt <= 300 and upd>= delta * upd_0:
-        gradient = - all_MtX + tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False) + sparse * tl.ones(core.shape)
+    # TODO: fast gradient instead of gradient
+    while cnt <= inner_iter and upd>= delta * upd_0:
+        gradient = - all_MtX + tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False) + l2weights[-1]*core + l1weights[-1] # * tl.ones(core.shape)
 
         # Proposition of reformulation for error computations
         delta_core = np.minimum(gradient_step*gradient, core)
@@ -571,22 +582,15 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
                 unfolded_core[idx_mat] = unfolded_core[idx_mat] / tl.norm(unfolded_core[idx_mat], 2)
         core = tl.fold(unfolded_core, mode_core_norm, core.shape)
 
-    # Adding the l1 norm value to the reconstruction error
-    sparsity_error = 0
-    for index, sparse in enumerate(sparsity_coefficients):
-        if sparse:
-            if index < len(factors):
-                sparsity_error += 2 * (sparse * np.linalg.norm(factors[index], ord=1))
-            elif index == len(factors):
-                sparsity_error += 2 * (sparse * tl.norm(core, 1))
-            else:
-                raise NotImplementedError("TODEBUG: Too many sparsity coefficients, should have been raised before.")
-
     rec_error = 1/2*(norm_tensor - 2*tl.tenalg.inner(all_MtX, core) + tl.tenalg.inner(tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False), core))
     
     #reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
-    #rec_error = beta_div.beta_divergence(tensor, reconstructed_tensor, 2) #1/2 normF(Y-Yhat)**2
-    cost_fct_val = (rec_error + sparsity_error) #/ norm_tensor
+    cost_fct_val = rec_error #/ norm_tensor
+    for mode in modes_list:
+        # factors sparsity/ridge
+        cost_fct_val += 1/2*l2weights[mode+1]*tl.norm(factors[mode])**2 + l1weights[mode+1]*tl.sum(factors[mode])
+    # core ridge/sparsity
+    cost_fct_val += 1/2*l2weights[0]*tl.norm(core)**2 + l1weights[0]*tl.sum(core)
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
     #print("diff: " + str(rec_error - exhaustive_rec_error))
