@@ -59,7 +59,8 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
         Prevents scaling degeneracy. Use on all factors which do not have l1
         regularisation, if l1 is used.
     l1weights: list of floats
-        The regularisation parameters using l1 norm as a penalisation. Induces sparsity.
+        The regularisation parameters using l1 norm as a penalisation. Induces sparsity. 
+        Penalties are [core, factor1,...]
         Default: None
     init: "random" | "tucker" | "custom" |
         - If set to random:
