@@ -22,7 +22,7 @@ def vector_nnls_solver(y, A, x, maxiter=500, atime=None, alpha=0.5, delta=0.01,
     
 
 def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01,
-                  l1weight = None, l2weight = None, normalize = False, nonzero = False):
+                  l1weight = None, l2weight = None, normalize = False, nonzero = False, epsilon=1e-12):
 ## Author : Axel Marmoret, based on Jeremy Cohen version's of Nicolas Gillis Matlab's code for HALS
 
     """
@@ -108,6 +108,9 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
         True if the lines of the V matrix can't be zero,
         False if they can be zero
         Default: False
+    epsilon: float
+        lower bound for the factors values
+        Default: 1e-12
 
     Returns
     -------
@@ -150,7 +153,7 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
     else:
         V = in_V.copy()
 
-    rho = 100000
+    rho = np.Inf
     eps0 = 0
     cnt = 1
     eps = 1
@@ -166,14 +169,15 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
                 #if sparsity_coefficient != None: # Using the sparsifying objective function
                 #deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight * np.ones(n)) / UtU[k,k], -V[k,:])
                 # TODO: note maths in manuscript
-                deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight - l2weight*V[k,:]) / (UtU[k,k]+l2weight), -V[k,:])
+                # TODO: dont forget epsilon
+                deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight - l2weight*V[k,:]) / (UtU[k,k]+l2weight), -V[k,:] + epsilon)
                 V[k,:] = V[k,:] + deltaV
 
                 #else:
                 #    #deltaV = np.maximum((UtM[k,:]- UtU[k,:]@V) / UtU[k,k],-V[k,:])
                 #    #V[k,:] = V[k,:] + deltaV
 
-                # TODO: this is not the loss anymore, change it
+                # We change V by deltaV, and keep track of l2 norm of changes
                 nodelta = nodelta + np.dot(deltaV, np.transpose(deltaV))
 
                 # Safety procedure, if columns aren't allow to be zero
