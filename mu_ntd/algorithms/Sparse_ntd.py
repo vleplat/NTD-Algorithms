@@ -60,7 +60,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
         regularisation, if l1 is used.
     l1weights: list of floats
         The regularisation parameters using l1 norm as a penalisation. Induces sparsity. 
-        Penalties are [core, factor1,...]
+        Penalties are [factor_1,..., factor_n, core]
         Default: None
     init: "random" | "tucker" | "custom" |
         - If set to random:
@@ -371,11 +371,11 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
     # Compute the extrapolated update for the factors.
     # Note that when alpha is zero, factors_y = factors_n.
     for mode in modes_list:
-        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weight=l2weights[mode+1], l1weight=l1weights[mode+1], epsilon=epsilon, iter_inner=iter_inner)
+        factors_n_up[mode] = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weight=l2weights[mode], l1weight=l1weights[mode], epsilon=epsilon, iter_inner=iter_inner)
         factors_y[mode] = np.maximum(factors_n_up[mode]+alpha*(factors_n_up[mode]-in_factors_n[mode]),epsilon)
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
-    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[0], l1weight=l1weights[0], epsilon=epsilon, iter_inner=iter_inner)
+    core_n_up = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[-1], l1weight=l1weights[-1], epsilon=epsilon, iter_inner=iter_inner)
     core_y = np.maximum(core_n_up+alpha*(core_n_up-in_core_n),epsilon) #TODO check bug correction core_n_up?
 
     # Compute the value of the objective (loss) function at the
@@ -383,9 +383,9 @@ def one_sntd_step_mu_HER(tensor, ranks, l2weights, l1weights, in_core, in_factor
     # non-extrapolated solution for the core (core_n).
     # ---> No, we only did that for fast computation. Here there is no such fast comp, so we do it on the true estimates
     # TODO: discuss OK
-    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ l2weights[0]*tl.norm(core_n_up) + l1weights[0]*tl.norm(core_n_up,1)
+    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ l2weights[-1]*tl.norm(core_n_up) + l1weights[-1]*tl.norm(core_n_up,1)
     for mode in modes_list:
-        cost_fycn = cost_fycn + 1/2*l2weights[mode+1]*tl.norm(factors_n_up[mode])**2 + l1weights[mode+1]*tl.sum(factors_n_up[mode])
+        cost_fycn = cost_fycn + 1/2*l2weights[mode]*tl.norm(factors_n_up[mode])**2 + l1weights[mode]*tl.sum(factors_n_up[mode])
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).

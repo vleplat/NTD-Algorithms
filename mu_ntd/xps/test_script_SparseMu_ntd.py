@@ -42,8 +42,8 @@ def script_run(
     n_iter_max = 500,
     beta = 1,
     iter_inner = 3,
-    l2weight = [0, 1, 0, 1],  #(\mu_g, \mu_W, \mu_H, \mu_Q)
-    l1weight = [1, 0, 1, 0],  #(\mu_g, \mu_W, \mu_H, \mu_Q)
+    l2weight = [1, 0, 1, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
+    l1weight = [0, 1, 0, 1],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
     verbose=False
     ):
      #running all iterations
