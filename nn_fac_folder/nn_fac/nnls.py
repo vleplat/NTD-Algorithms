@@ -156,7 +156,7 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
     rho = np.Inf
     eps0 = 0
     cnt = 1
-    eps = 1
+    eps = np.Inf
 
     # Start timer
     tic = time.time()

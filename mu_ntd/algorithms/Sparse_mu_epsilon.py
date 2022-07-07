@@ -23,7 +23,7 @@ def gamma(beta):
     else:
         return 1
 
-def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20):
+def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20, acc_alpha=0.5, acc_delta=0.01, atime=1):
     """
     ============================================================
     Sparse Beta-Divergence NMF solved with Multiplicative Update
@@ -58,6 +58,8 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
     iter_inner: int
         Number of updates/loops in this call
         Default: 20
+    acc_delta : float, optional
+        _description_, by default 0.01
 
     Returns
     -------
@@ -74,6 +76,10 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
     factorization with the beta-divergence, Neural Computation,
     vol. 23, no. 9, pp. 2421–2456, 2011.
     """
+
+    # acceleration init
+    res = 1
+    res0 = 0
 
     # Checks
     if beta < 0:
@@ -98,12 +104,17 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
         MVt = M@V.T
 
     for iters in range(iter_inner):
+
+        # Computing DeltaU
+        flag = True # keep track if update is for beta=0
         if beta == 0:
             K = np.dot(U,V)
             if not l2weight:
                 denom = np.dot(K**(beta-1),V.T) + l1weight
-                U = np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
+                deltaU = U * ((np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta) -1)
             else:
+                # Only case where we don't use the trick because Jeremy is unsure how to implement
+                flag = False # no delta U
                 K_inverted = K**(-1)
                 Ks_inverted = K**(-2)
                 B_tilde = (K_inverted)@V.T
@@ -121,35 +132,46 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
             if not l2weight:
                 K_inverted = K**(-1)
                 denom = np.array([C for i in range(np.shape(K)[0])]) + l1weight
-                U = np.maximum(U * (np.dot((K_inverted*M),V.T) / denom),epsilon)
+                deltaU = U * ((np.dot((K_inverted*M),V.T) / denom)-1)
             else:
                 #e = np.ones(np.shape(M))
                 #C = np.dot(e,V.T)
                 K_inverted = K**(-1)
                 S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
                 denom = 2*l2weight
-                U = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon)
-        # TODO: implement beta=2
+                deltaU = ((C**2 + S)**(1/2)-C) / denom - U # not so useful here, but uniform syntax
+        # TODO: implement beta=2 with l2 --> beta=2 should never be used anyway
         elif beta == 2:
-            U = np.maximum(U * (MVt / (U@VVt + l1weight)), epsilon)
+            deltaU = U * ((MVt / (U@VVt + l1weight))-1)
         elif beta == 3:
             K = np.dot(U,V)
             denom = np.dot(K**2,V.T) + l1weight
-            U = np.maximum(U * (np.dot((K * M),V.T) / denom) ** gamma(beta), epsilon)
+            deltaU = U * ((np.dot((K * M),V.T) / denom) ** gamma(beta)-1)
         else:
             K = np.dot(U,V)
             denom = np.dot(K**(beta-1),V.T) + l1weight
-            U = np.maximum(U * (np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta), epsilon)
+            deltaU = U * ((np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta)-1)
 
+        # Updating U
+        if flag:
+            U = np.maximum(U + deltaU, epsilon)
         # stopping condition dynamic if allowed
-        #TODO
-        if False:
-            print('Stopped inner iters, not implemented')
-            break
+        if acc_delta:
+            deltaU_norm = np.linalg.norm(deltaU)**2
+            # if first iteration, store first decrease
+            if iters==0:
+                res_0 = deltaU_norm
+            else:
+                res = deltaU_norm
+            # we stop if deltaV decrease in norm is not enough
+            if iters>0 and res < acc_delta*res_0:
+                break
     return U
 
-def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20):
+def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20, acc_delta=0.01):
     """
+    TODO ACCELERATION
+
     This function is used to update the core G of a
     nonnegative Tucker Decomposition (NTD) [1] with beta-divergence [3]
     and Multiplicative Updates [2] and sparsity penalty.

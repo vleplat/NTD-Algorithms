@@ -392,10 +392,6 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
         alpha = math.inf
         delta = 0
 
-    # for debug
-    print(alpha, delta)
-
-
     # Iterate over one step of NTD
     for iteration in range(n_iter_max):
         # One pass of least squares on each updated mode
@@ -596,6 +592,7 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
     upd = 1
 
     # TODO: fast gradient instead of gradient
+    # TODO: dynamic stopping with time
     while cnt <= inner_iter and upd>= delta * upd_0:
         gradient = - all_MtX + tl.tenalg.multi_mode_dot(core, all_MtM, transpose = False) + l2weights[-1]*core + l1weights[-1] # * tl.ones(core.shape)
 

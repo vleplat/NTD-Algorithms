@@ -4,8 +4,6 @@
 
 # TODO:
 # - heuristic Gillis-like for stopping inner iters ?
-# - L2 reg on core --> Valou
-# - L1 et L2 for beta <> 1
 
 # Python classics
 import numpy as np
@@ -18,20 +16,21 @@ import pandas as pd
 #import shootout as sho
 from shootout.methods.runners import run_and_track
 
+# todo shootout: write report with parameters
 variables={    
-    "U_lines" : [20,100],
-    "V_lines" : [20,100],
-    "ranks" : [[4,5,6],[10,2,2],[15,15,15]],
-    "sigma" : [0,1e-2],
-    "iter_inner" : [1,3,10]
+    "U_lines" : 20,
+    "V_lines" : 20,
+    "ranks" : [[4,5,6]],
+    "sigma" : 0,
+    "iter_inner" : 10
         }
 #U_lines = [20,100],
 #V_lines = [20,100],
 #ranks=[[4,5,6],[10,2,2],[15,15,15]],
 #sigma=[0,1e-2],
 #iter_inner= [1,3,10])
-@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/", name_store="run-01",
-                verbose=True, nb_seeds=4,**variables)
+@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/",
+                verbose=True, nb_seeds=2,**variables)
 def script_run(
     U_lines = 100,
     V_lines = 101,
@@ -81,18 +80,16 @@ def script_run(
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-    # ### Beta = 1 - MU no extrapolation
+    # ### Beta = 1 - MU no extrapolation no acceleration
     core, factors, cost_fct_vals, toc, alpha = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=False, iter_inner=iter_inner)
-    # ### Beta = 1 - MU extrapolation
+                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=False)
+    # ### Beta = 1 - MU extrapolation and acceleration
     core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=True, iter_inner=iter_inner)
+                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=True)
 
     #----------------------------------------------
     # Post-processing for checking identification
     #----------------------------------------------
-
-    # TODO use Tensorly viz
 
     # normalisation
     for i in range(len(factors)):
