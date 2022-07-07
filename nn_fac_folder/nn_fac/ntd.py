@@ -20,7 +20,7 @@ import numpy as np
 
 def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            l1weights = [], l2weights = [], fixed_modes = [], normalize = [], mode_core_norm = None,
-           verbose=False, return_costs=False, deterministic=False, inner_iter=100):
+           verbose=False, return_costs=False, deterministic=False, inner_iter=100, accelerate=True):
 
     """
     ======================================
@@ -50,6 +50,9 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
     Tensors are manipulated with the tensorly toolbox [3].
 
     In tensorly and in our convention, tensors are unfolded and treated as described in [4].
+
+    MODIFIED FROM NN_FAC ORIGINAL: dynamic stopping is optional
+    AND L1 L2 PROPER SUPPORT
 
     Parameters
     ----------
@@ -118,10 +121,19 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
         Indicates whether the algorithm should return all normalized cost function 
         values and computation time of each iteration or not
         Default: False
-    deterministic:
+    deterministic: boolean
         Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation,
         and optimization techniques in the NNLS, function of the runtime.
         This is made to enhance reproducible research, and should be set to True for computation of results.
+    accelerate: boolean or list of length 2
+        If True, inner iterations in the algorithm will stop dynamically based on the rules in [2].
+        If False, the number of inner iterations is fixed. In practice use accelerate=True, but
+        for fair comparison with other methods accelerate=False has merit. Accelerate will not use
+        time-based acceleration if deterministic is True.
+        User can input value for the alpha and delta parameters by setting accelerate=[alpha, delta], e.g.
+        accelerate = [0.5, 0.01] are the default values. A typical input would be [0.5, 1e-x] where large x leads
+        to more precise inner iterations.
+        Default: True
 
     Returns
     -------
@@ -225,11 +237,12 @@ def ntd(tensor, ranks, init = "random", core_0 = None, factors_0 = [], n_iter_ma
     return compute_ntd(tensor, ranks, core, factors, n_iter_max=n_iter_max, tol=tol,
                        l1weights = l1weights, l2weights = l2weights, fixed_modes = fixed_modes, 
                        normalize = normalize, mode_core_norm = mode_core_norm,
-                       verbose=verbose, return_costs=return_costs, deterministic = deterministic, inner_iter=inner_iter)
+                       verbose=verbose, return_costs=return_costs, deterministic = deterministic, inner_iter=inner_iter,
+                       accelerate=accelerate)
 
 def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
            l1weights = [], l2weights = [], fixed_modes = [], normalize = [], mode_core_norm=None,
-           verbose=False, return_costs=False, deterministic=False, inner_iter=100):
+           verbose=False, return_costs=False, deterministic=False, inner_iter=100, accelerate=True):
 
     """
     Computation of a Nonnegative Tucker Decomposition [1]
@@ -290,6 +303,11 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
     deterministic:
         Runs the algorithm as a deterministic way, by fixing seed in all possible randomisation.
         This is made to enhance reproducible research.
+    accelerate: boolean
+        If True, inner iterations in the algorithm will stop dynamically based on the rules in [2].
+        If False, the number of inner iterations is fixed. In practice use accelerate=True, but
+        for fair comparison with other methods accelerate=False has merit.
+        Default: True
 
     Returns
     -------
@@ -357,15 +375,33 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
     #for mode in range(tl.ndim(tensor)):
     #   unfolded_tensors.append(tl.base.unfold(tensor, mode))
 
+    # Set dynamic inner stopping parameters
+    if accelerate:
+        if deterministic:
+            alpha = math.inf
+        else:
+            if type(accelerate)==list:
+                alpha = accelerate[0]
+            else:
+                alpha = 0.5
+        if type(accelerate)==list:
+            delta = accelerate[1]
+        else:
+            delta = 0.01
+    else:
+        alpha = math.inf
+        delta = 0
+
+    # for debug
+    print(alpha, delta)
+
+
     # Iterate over one step of NTD
     for iteration in range(n_iter_max):
         # One pass of least squares on each updated mode
-        if deterministic:
-            core, factors, cost = one_ntd_step(tensor, ranks, core, factors, norm_tensor,
-                                          l1weights, l2weights, fixed_modes, normalize, mode_core_norm, alpha = math.inf, inner_iter=inner_iter)
-        else:
-            core, factors, cost = one_ntd_step(tensor, ranks, core, factors, norm_tensor,
-                                          l1weights, l2weights, fixed_modes, normalize, mode_core_norm, inner_iter=inner_iter)
+        core, factors, cost = one_ntd_step(tensor, ranks, core, factors, norm_tensor,
+                                          l1weights, l2weights, fixed_modes, normalize, mode_core_norm,
+                                          inner_iter=inner_iter,alpha=alpha, delta=delta)
 
         # Store the computation time
         toc.append(time.time() - tic)
@@ -398,11 +434,8 @@ def compute_ntd(tensor_in, ranks, core_in, factors_in, n_iter_max=100, tol=1e-6,
 
 def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
                  l1weights, l2weights, fixed_modes, normalize, mode_core_norm, 
-                 alpha=0.5, delta=0, inner_iter=100):
+                 alpha=0.5, delta=0.01, inner_iter=100):
     """
-    MODIFIED FROM NN_FAC ORIGINAL: DELTA=0 (NO DYNAMIC INNER STOPPING)
-    AND L1 L2 PROPER SUPPORT
-
     One pass of Hierarchical Alternating Least Squares update along all modes,
     and gradient update on the core,
     which decreases reconstruction error in Nonnegative Tucker Decomposition.
@@ -588,9 +621,9 @@ def one_ntd_step(tensor, ranks, in_core, in_factors, norm_tensor,
     cost_fct_val = rec_error #/ norm_tensor
     for mode in modes_list:
         # factors sparsity/ridge
-        cost_fct_val += 1/2*l2weights[mode+1]*tl.norm(factors[mode])**2 + l1weights[mode+1]*tl.sum(factors[mode])
+        cost_fct_val += 1/2*l2weights[mode]*tl.norm(factors[mode])**2 + l1weights[mode]*tl.sum(factors[mode])
     # core ridge/sparsity
-    cost_fct_val += 1/2*l2weights[0]*tl.norm(core)**2 + l1weights[0]*tl.sum(core)
+    cost_fct_val += 1/2*l2weights[-1]*tl.norm(core)**2 + l1weights[-1]*tl.sum(core)
 
     #exhaustive_rec_error = (tl.norm(tensor - tl.tenalg.multi_mode_dot(core, factors, transpose = False), 2) + sparsity_error) / norm_tensor
     #print("diff: " + str(rec_error - exhaustive_rec_error))
