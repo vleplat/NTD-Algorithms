@@ -156,7 +156,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
             U = np.maximum(U + deltaU, epsilon)
             # stopping condition dynamic if allowed
             if acc_delta:
-                deltaU_norm = np.sum(np.abs(deltaU))
+                deltaU_norm = np.linalg.norm(deltaU)
                 # if first iteration, store first decrease
                 if iters==0:
                     res_0 = deltaU_norm
@@ -298,7 +298,7 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
             G = np.maximum(G + deltaG, epsilon)
             # stopping condition dynamic if allowed
             if acc_delta:
-                deltaG_norm = np.sum(np.abs(deltaG))
+                deltaG_norm = np.linalg.norm(deltaG)**2
                 # if first iteration, store first decrease
                 if iters==0:
                     res_0 = deltaG_norm
