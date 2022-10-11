@@ -79,7 +79,6 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
 
     # acceleration init
     res = 1
-    res0 = 0
 
     # Checks
     if beta < 0:
@@ -155,17 +154,19 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
         # Updating U
         if flag:
             U = np.maximum(U + deltaU, epsilon)
-        # stopping condition dynamic if allowed
-        if acc_delta:
-            deltaU_norm = np.linalg.norm(deltaU)**2
-            # if first iteration, store first decrease
-            if iters==0:
-                res_0 = deltaU_norm
-            else:
-                res = deltaU_norm
-            # we stop if deltaV decrease in norm is not enough
-            if iters>0 and res < acc_delta*res_0:
-                break
+            # stopping condition dynamic if allowed
+            if acc_delta:
+                deltaU_norm = np.sum(np.abs(deltaU))
+                # if first iteration, store first decrease
+                if iters==0:
+                    res_0 = deltaU_norm
+                else:
+                    res = deltaU_norm
+                # we stop if deltaV decrease in norm is not enough
+                # at least 2 iterations
+                if iters>0 and res < acc_delta*res_0:
+                    #print("factor, after ", iters, res, res_0) # for debugging
+                    break
     return U
 
 def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20, acc_delta=0.01):
@@ -212,6 +213,10 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
     vol. 23, no. 9, pp. 2421–2456, 2011.
     """
 
+    # acceleration init
+    res = 1
+    res0 = 0
+
     # Checks
     if beta < 0:
         raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
@@ -238,15 +243,18 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
         VVt = [fac.T@fac for fac in factors]
         MVt = tl.tenalg.multi_mode_dot(tensor, [fac.T for fac in factors])
 
-    for iter in range(iter_inner):
+    for iters in range(iter_inner):
+        
+        flag = True
         if beta == 0:
             K = tl.tenalg.multi_mode_dot(G,factors)
             L1 = K**(-1)
             L2 = K**(-2) * tensor
             if not l2weight:
-                G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
-                tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+                deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+                tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) -1)
             else:
+                flag = False # seems hard to stop on the fly here
                 B_tilde = tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors])
                 D_tilde = -1*((G)**2)*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
                 for combination in it.product(*args):
@@ -258,33 +266,48 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
             if not l2weight:
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
-                G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) , epsilon)
+                deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) - 1)
                 
             else:
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
                 S = 4*l2weight*G*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
                 denom = 2*l2weight
-                G = np.maximum(((C**2 + S)**(1/2)-C) / denom, epsilon) 
+                deltaG = ((C**2 + S)**(1/2)-C) / denom - G 
  
         elif beta == 2:
             K = tl.tenalg.multi_mode_dot(G,factors)
-            G = np.maximum(G * (MVt  / (l1weight +
-            tl.tenalg.multi_mode_dot(G, VVt))) ** gamma(beta) , epsilon)
+            deltaG = G * ((MVt  / (l1weight + tl.tenalg.multi_mode_dot(G, VVt))) ** gamma(beta)-1)
 
         elif beta == 3:
             K = tl.tenalg.multi_mode_dot(G,factors)
             L1 = K**2
             L2 = K * tensor
-            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
-            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+            deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) -1)
 
         else:
             K = tl.tenalg.multi_mode_dot(G,factors)
             L1 = K**(beta-1)
             L2 = K**(beta-2) * tensor
-            G = np.maximum(G * (tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
-            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) , epsilon)
+            deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight +
+            tl.tenalg.multi_mode_dot(L1, [fac.T for fac in factors]))) ** gamma(beta) -1)
+
+        # Updating G
+        if flag:
+            G = np.maximum(G + deltaG, epsilon)
+            # stopping condition dynamic if allowed
+            if acc_delta:
+                deltaG_norm = np.sum(np.abs(deltaG))
+                # if first iteration, store first decrease
+                if iters==0:
+                    res_0 = deltaG_norm
+                else:
+                    res = deltaG_norm
+                # we stop if deltaV decrease in norm is not enough
+                if iters>0 and res < np.sqrt(acc_delta)*res_0: #TODO note sqrt here empirical
+                    #print("core, after ", iters, res, res_0) # for debugging
+                    break
 
     return G
 
