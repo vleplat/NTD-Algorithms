@@ -21,7 +21,7 @@ variables={
     "U_lines" : 20,
     "V_lines" : 20,
     "ranks" : [[4,5,6]],
-    "sigma" : 0,
+    "SNR" : 100,
     "iter_inner" : 10
         }
 #U_lines = [20,100],
@@ -36,7 +36,7 @@ def script_run(
     V_lines = 101,
     W_lines = 20,
     ranks = [4,5,6],
-    sigma = 1e-2,
+    SNR = 20,
     tol = 0,
     n_iter_max = 500,
     beta = 1,
@@ -65,7 +65,10 @@ def script_run(
     core_0[core_0<0]=0 #sparsifying the gt solution
     factors_GT = factors_0
     core_GT = core_0
-    T = tl.tenalg.multi_mode_dot(core_0, factors_0) + sigma * np.random.rand(U_lines, V_lines, W_lines) #1e-2
+    Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 
+    N = np.random.rand(U_lines, V_lines, W_lines) #1e-2
+    sigma = 10**(-SNR/20)*np.linalg.norm(Ttrue)/np.linalg.norm(N) 
+    T = Ttrue + sigma*N
 
     # Random initialization for the NTD
     factors_init = []
