@@ -27,7 +27,7 @@ variables={
     "extrapolate": [False, False],
     "l1weight": [0, 1e8, 1e6, 100], # works? syntax?
     "SNR" : [80],
-    "sparse_data": [False] # do each test manually for nicer plots # CORE IS ALWAYS SPARSE
+    "sparse_data": [False] # do each test manually for nicer plots
         }
 @run_and_track(algorithm_names="l1 MU", path_store="./Results/", name_store=name_store,
                 verbose=True, nb_seeds=nb_seeds, seeded_fun=True, **variables)
@@ -75,8 +75,11 @@ def script_run(
         factors_0.append(W)
         factors_0.append(H)
         factors_0.append(Q)
-    core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
-    core_0[core_0<0]=0 #sparsifying the gt solution
+    core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
+    if sparse_data:
+        # TODO: care for 0 core slices, regenerate if columns-rows-fibers are 0
+        core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
+        core_0[core_0<0]=0 #sparsifying the gt solution
 
     # generate noise according to input SNR
     Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 

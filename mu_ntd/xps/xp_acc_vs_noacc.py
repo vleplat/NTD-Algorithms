@@ -74,8 +74,11 @@ def script_run(
         factors_0.append(W)
         factors_0.append(H)
         factors_0.append(Q)
-    core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
-    core_0[core_0<0]=0 #sparsifying the gt solution
+    core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
+    if sparse_data:
+        # TODO: care for 0 core slices, regenerate if columns-rows-fibers are 0
+        core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
+        core_0[core_0<0]=0 #sparsifying the gt solution
 
     # generate noise according to input SNR
     Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 

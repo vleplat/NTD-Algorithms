@@ -4,6 +4,7 @@
 
 # Python classics
 from modulefinder import STORE_NAME
+from sqlite3 import adapt
 import numpy as np
 import tensorly as tl
 import mu_ntd.algorithms.Sparse_ntd as SNTD
@@ -15,18 +16,18 @@ import pandas as pd
 from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
-nb_seeds = 1 # 0 for only plotting
+nb_seeds = 5 # 0 for only plotting
 name_store = "xp_inner_impact_02-09-22"
 variables={    
-    "U_lines" : [40],
-    "V_lines" : [40],
+    "U_lines" : [20],#todo fatten for paper tests
+    "V_lines" : [20],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
-    "accelerate": [False],#, 3e-1, 5e-1, 7e-1],#[False, 1e-2, 1e-1, 4e-1],
-    "iter_inner": [10, 20, 50, 100, 200, 500],
+    "accelerate": [False, 1e-1, 2e-1, 5e-1, 7e-1],
+    "iter_inner": [1, 5, 10, 20, 50, 100, 200],
     "extrapolate": [False],#, True],
     "SNR" : [80],
-    "sparse_data": [False] # change manually # CORE IS ALWAYS SPARSE
+    "sparse_data": [False] # change manually
         }
 @run_and_track(algorithm_names="l1 MU", path_store="./Results/", name_store=name_store,
                 verbose=True, nb_seeds=nb_seeds, seeded_fun=True, **variables)
@@ -50,21 +51,24 @@ def script_run(
     seed = 0, # will be populated by `seed` in shootout
     sparse_data = False
     ):
-    # Adaptive max iter, linear scale.
-    n_iter_max = int(n_iter_max*100/iter_inner) # will be 1500 for 100 iter inner
+    # Adaptive max iter, linear scale
+    n_iter_max = int(n_iter_max*100/np.maximum(iter_inner, 10)) # will be 1500 for 100 iter inner, 6000 when accelerate is 0.5 
+    if accelerate:
+        n_iter_max = int(n_iter_max*(1+accelerate))
+
     # weights processings
     l2weight = [l2weight, l2weight, l2weight, 0]
     l1weight = [0, 0, 0, l1weight]
     if l1weight==0:
-        l2weight[-1] = l2weight[0] #setting weight on core if no sparsity
+        l2weight[-1] = l2weight[0] #setting ridge on core if no sparsity but ridge on factors
     # Seeding 
-    rng = np.random.RandomState(seed+20)
+    rng = np.random.RandomState(seed+hash("sNTD"))
     # Generation of the input data tensor T
     factors_0 = []
     if not sparse_data:
-        factors_0.append(np.random.rand(U_lines, ranks[0]))
-        factors_0.append(np.random.rand(V_lines, ranks[1]))
-        factors_0.append(np.random.rand(W_lines, ranks[2]))
+        factors_0.append(rng.rand(U_lines, ranks[0]))
+        factors_0.append(rng.rand(V_lines, ranks[1]))
+        factors_0.append(rng.rand(W_lines, ranks[2]))
     else:
         # sparse generation using truncated Gaussian
         W = rng.randn(U_lines, ranks[0])
@@ -76,8 +80,11 @@ def script_run(
         factors_0.append(W)
         factors_0.append(H)
         factors_0.append(Q)
-    core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
-    core_0[core_0<0]=0 #sparsifying the gt solution
+    core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
+    if sparse_data:
+        # TODO: care for 0 core slices, regenerate if columns-rows-fibers are 0
+        core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
+        core_0[core_0<0]=0 #sparsifying the gt solution
 
     # generate noise according to input SNR
     Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 
@@ -99,7 +106,7 @@ def script_run(
 
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
-    core, factors, cost_fct_vals, toc, _ = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+    core, factors, cost_fct_vals, toc, _, cnt = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
                                           fixed_modes = [], normalize = 4*[None], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
 
     #----------------------------------------------
@@ -122,7 +129,7 @@ def script_run(
     nnz = np.sum(core>1e-12) 
     sparsity_ratio = nnz/nb_entries # 1 for dense, 0 for null
 
-    return {"errors": [cost_fct_vals], "timings": [toc], "sparsity": sparsity_ratio}#, "alpha":[alpha,alpha_HER], "congruence": [factors[2].T@factors_0[2],factors_HER[2].T@factors_0[2]]}
+    return {"errors": [cost_fct_vals], "timings": [toc], "sparsity": sparsity_ratio, "inner_cnt": [cnt]}#, "alpha":[alpha,alpha_HER], "congruence": [factors[2].T@factors_0[2],factors_HER[2].T@factors_0[2]]}
 
 # Plotting
 name_read = "Results/"+name_store
@@ -134,11 +141,12 @@ import shootout.methods.plotters as pt
 
 # small tweaks to variables to adjust ranks #TODO adjust variables
 variables.pop("ranks")
+ovars = list(variables.keys())
 # 0. Interpolating time (choose fewer points for better vis)
-df = pp.interpolate_time_and_error(df, npoints = 100)
+df = pp.interpolate_time_and_error(df, npoints = 100, adaptive_grid=True) #hope this works
 # 1. Convergence Plots
-df_conv_it = pp.df_to_convergence_df(df,other_names=list(variables.keys()),groups=True,groups_names=list(variables.keys()))
-df_conv_time = pp.df_to_convergence_df(df,other_names=list(variables.keys()),groups=True,groups_names=list(variables.keys()), err_name="errors_interp", time_name="timings_interp")
+df_conv_it = pp.df_to_convergence_df(df,other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
+df_conv_time = pp.df_to_convergence_df(df,other_names=ovars,groups=True,groups_names=ovars, err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
 # renaming errors and time for convenience
 df_conv_time = df_conv_time.rename(columns={"timings_interp": "timings", "errors_interp": "errors"})
 # 2. Converting to median for iterations and timings
@@ -147,8 +155,8 @@ df_conv_median_time = pp.median_convergence_plot(df_conv_time, type="timings")
 # downsampling it by 5 for plotting (100 points per plot)
 df_conv_median_it = df_conv_median_it[df_conv_median_it["it"]%15==0] # manual tweak
 # 3. Making plots
-fig = px.line(df_conv_median_it, x="it", y="errors", color="iter_inner", log_y=True, facet_row="extrapolate", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white")
-fig2 = px.line(df_conv_median_time, x="timings", y="errors", color="iter_inner", log_y=True, facet_row="extrapolate", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white")
+fig = px.line(df_conv_median_it, x="it", y="errors", color="accelerate", log_y=True, facet_row="iter_inner", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white")
+fig2 = px.line(df_conv_median_time, x="timings", y="errors", color="accelerate", log_y=True, facet_row="iter_inner", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white")
 # smaller linewidth
 fig.update_traces(
     selector=dict(),
@@ -162,6 +170,50 @@ fig2.update_traces(
 )
 # time
 #fig2 = px.line(df_conv, x="timings", y="errors", color="accelerate", log_y=True, line_group="groups", facet_col="iter_inner", facet_row="extrapolate")
+fig.update_xaxes(matches=None)
+#fig.update_yaxes(matches=None)
+fig.update_xaxes(showticklabels=True)
+#fig.update_yaxes(showticklabels=True)
+#fig2.update_xaxes(matches=None)
+#fig2.update_yaxes(matches=None)
+#fig2.update_xaxes(showticklabels=True)
+#fig2.update_yaxes(showticklabels=True)
+# Figure showing cnt for each algorithm
+# 1. make long format for cnt
+# TODO: improve shootout to better handle this case
+df_conv_cnt = pp.df_to_convergence_df(df, groups=True, groups_names=list(variables.keys()), err_name="inner_cnt", other_names=list(variables.keys()), time_name=False, max_time=False)
+# 2. median plots
+df_conv_median_cnt = pp.median_convergence_plot(df_conv_cnt, type=False, err_name="inner_cnt")
+
+fig3 = px.line(df_conv_median_cnt, 
+            x="it", 
+            y= "inner_cnt", 
+            color='accelerate',
+            facet_row = "iter_inner",
+            log_y=True,
+            error_y="q_errors_p", 
+            error_y_minus="q_errors_m", 
+            template="plotly_white",
+            height=1000)
+fig3.update_layout(
+    font_size = 20,
+    width=1200, # in px
+    height=900,
+    )
+# smaller linewidth
+fig3.update_traces(
+    selector=dict(),
+    line_width=3,
+    error_y_thickness = 0.3
+)
+
+fig3.update_xaxes(matches=None)
+fig3.update_yaxes(matches=None)
+fig3.update_xaxes(showticklabels=True)
+fig3.update_yaxes(showticklabels=True)
+
+#fig3.show()
+
 
 # showing all
 #fig.show()
