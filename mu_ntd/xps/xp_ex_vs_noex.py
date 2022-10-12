@@ -15,17 +15,17 @@ import pandas as pd
 from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
-nb_seeds = 1 # 0 for only plotting
-name_store = "xp_ex_noex_01-09-22DUMMY"
+nb_seeds = 4 # 0 for only plotting
+name_store = "xp_ex_noex_12-10-22"
 variables={    
     "U_lines" : [40],#,200],
     "V_lines" : [40],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
-    "accelerate": [0.01],
-    "iter_inner": [20],
+    "accelerate": [False],
+    "iter_inner": [50],
     "extrapolate": [False, False],
-    "l1weight": [0, 1e8, 1e6, 100], # works? syntax?
+    "l1weight": [0],# 1e8, 1e6, 100], # works? syntax? do in another test
     "SNR" : [80],
     "sparse_data": [False] # do each test manually for nicer plots
         }
@@ -44,7 +44,7 @@ def script_run(
     #l2weight = [1, 1, 1, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
     #l1weight = [0, 0, 0, 1],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
     l1weight = 0,  # \mu_g)
-    l2weight = 1e-8,
+    l2weight = 0,#1e-8,
     verbose=False,
     extrapolate = False,
     accelerate = False,
@@ -57,7 +57,7 @@ def script_run(
     if l1weight==0:
         l2weight[-1] = l2weight[0] #setting weight on core if no sparsity
     # Seeding 
-    rng = np.random.RandomState(seed+hash("sNTD"))
+    rng = np.random.RandomState(seed+hash("sNTD")%(2**32))
     # Generation of the input data tensor T # dense
     factors_0 = []
     if not sparse_data:
@@ -101,10 +101,10 @@ def script_run(
 
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
-    core, factors, cost_fct_vals, toc, alpha = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+    core, factors, cost_fct_vals, toc, alpha, _ = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
                                           fixed_modes = [], normalize = 4*[None], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
     #print(alpha)
-    print(core)
+    #print(core)
 
     #----------------------------------------------
     # Post-processing for checking identification
@@ -138,11 +138,12 @@ import shootout.methods.plotters as pt
 
 # small tweaks to variables to adjust ranks #TODO adjust variables
 variables.pop("ranks")
+ovars = list(variables.keys())
 # 0. Interpolating time (choose fewer points for better vis)
-df = pp.interpolate_time_and_error(df, npoints = 100)
+df = pp.interpolate_time_and_error(df, npoints = 100, adaptive_grid=True)
 # 1. Convergence Plots
-df_conv_it = pp.df_to_convergence_df(df,other_names=list(variables.keys()),groups=True,groups_names=list(variables.keys()))
-df_conv_time = pp.df_to_convergence_df(df,other_names=list(variables.keys()),groups=True,groups_names=list(variables.keys()), err_name="errors_interp", time_name="timings_interp")
+df_conv_it = pp.df_to_convergence_df(df,other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
+df_conv_time = pp.df_to_convergence_df(df,other_names=ovars, groups=True,groups_names=ovars, err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
 # renaming errors and time for convenience
 df_conv_time = df_conv_time.rename(columns={"timings_interp": "timings", "errors_interp": "errors"})
 # 2. Converting to median for iterations and timings
@@ -164,6 +165,14 @@ fig2.update_traces(
     line_width=3,
     error_y_thickness = 0.3
 )
+fig.update_xaxes(matches=None)
+#fig.update_yaxes(matches=None)
+fig.update_xaxes(showticklabels=True)
+#fig.update_yaxes(showticklabels=True)
+#fig2.update_xaxes(matches=None)
+#fig2.update_yaxes(matches=None)
+#fig2.update_xaxes(showticklabels=True)
+#fig2.update_yaxes(showticklabels=True)
 # time
 #fig2 = px.line(df_conv, x="timings", y="errors", color="accelerate", log_y=True, line_group="groups", facet_col="iter_inner", facet_row="extrapolate")
 
