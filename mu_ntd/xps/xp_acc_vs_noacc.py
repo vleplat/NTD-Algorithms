@@ -56,13 +56,13 @@ def script_run(
     if l1weight==0:
         l2weight[-1] = l2weight[0] #setting weight on core if no sparsity
     # Seeding 
-    rng = np.random.RandomState(seed+20)
+    rng = np.random.RandomState(seed+hash("sNTD"))
     # Generation of the input data tensor T
     factors_0 = []
     if not sparse_data:
-        factors_0.append(np.random.rand(U_lines, ranks[0]))
-        factors_0.append(np.random.rand(V_lines, ranks[1]))
-        factors_0.append(np.random.rand(W_lines, ranks[2]))
+        factors_0.append(rng.rand(U_lines, ranks[0]))
+        factors_0.append(rng.rand(V_lines, ranks[1]))
+        factors_0.append(rng.rand(W_lines, ranks[2]))
     else:
         # sparse generation using truncated Gaussian
         W = rng.randn(U_lines, ranks[0])
