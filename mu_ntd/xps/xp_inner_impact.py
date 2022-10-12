@@ -17,17 +17,17 @@ from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
 nb_seeds = 5 # 0 for only plotting
-name_store = "xp_inner_impact_02-09-22"
+name_store = "xp_inner_impact_12-10-22_only_acc"
 variables={    
-    "U_lines" : [20],#todo fatten for paper tests
-    "V_lines" : [20],
+    "U_lines" : [40],#todo fatten for paper tests
+    "V_lines" : [40],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
-    "accelerate": [False, 1e-1, 2e-1, 5e-1, 7e-1],
-    "iter_inner": [1, 5, 10, 20, 50, 100, 200],
+    "accelerate": [False, 3e-1, 5e-1, 7e-1],# [False, 1e-1, 2e-1, 5e-1, 7e-1], no impact of 0.1 and 0.2
+    "iter_inner": [50], #[1, 5, 10, 20, 50, 100, 200, 500],
     "extrapolate": [False],#, True],
     "SNR" : [80],
-    "sparse_data": [False] # change manually
+    "sparse_data": [False] # should I check?
         }
 @run_and_track(algorithm_names="l1 MU", path_store="./Results/", name_store=name_store,
                 verbose=True, nb_seeds=nb_seeds, seeded_fun=True, **variables)
@@ -52,9 +52,9 @@ def script_run(
     sparse_data = False
     ):
     # Adaptive max iter, linear scale
-    n_iter_max = int(n_iter_max*100/np.maximum(iter_inner, 10)) # will be 1500 for 100 iter inner, 6000 when accelerate is 0.5 
-    if accelerate:
-        n_iter_max = int(n_iter_max*(1+accelerate))
+    n_iter_max = int(n_iter_max*100/np.maximum(iter_inner, 2)) # will be 1500 for 100 iter inner, 6000 when accelerate is 0.5 
+    #if accelerate:
+    #    n_iter_max = int(n_iter_max*(1+3*accelerate))
 
     # weights processings
     l2weight = [l2weight, l2weight, l2weight, 0]
@@ -62,7 +62,7 @@ def script_run(
     if l1weight==0:
         l2weight[-1] = l2weight[0] #setting ridge on core if no sparsity but ridge on factors
     # Seeding 
-    rng = np.random.RandomState(seed+hash("sNTD"))
+    rng = np.random.RandomState(seed+hash("sNTD")%(2**32))
     # Generation of the input data tensor T
     factors_0 = []
     if not sparse_data:
