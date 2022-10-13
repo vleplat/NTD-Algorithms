@@ -130,6 +130,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
             # If l2 weight is not used, we default the l1 formula. If l1=0 also it boils down to usual MU. This is faster than the l2 default.
             if not l2weight:
                 K_inverted = K**(-1)
+                # testing TODO CHECK
                 denom = np.array([C for i in range(np.shape(K)[0])]) + l1weight
                 deltaU = U * ((np.dot((K_inverted*M),V.T) / denom)-1)
             else:
@@ -141,7 +142,9 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                 deltaU = ((C**2 + S)**(1/2)-C) / denom - U # not so useful here, but uniform syntax
         # TODO: implement beta=2 with l2 --> beta=2 should never be used anyway
         elif beta == 2:
-            deltaU = U * ((MVt / (U@VVt + l1weight))-1)
+            #deltaU = U * ((MVt / (U@VVt + l1weight))-1)
+            # TODO Confirm with Valentin
+            deltaU = U * (((MVt - l1weight) / (U@VVt + l2weight*U))-1)
         elif beta == 3:
             K = np.dot(U,V)
             denom = np.dot(K**2,V.T) + l1weight
@@ -167,7 +170,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                 if iters>0 and res < acc_delta*res_0:
                     #print("factor, after ", iters, res, res_0) # for debugging
                     break
-    return U
+    return U, iters
 
 def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=20, acc_delta=0.01):
     """
@@ -266,7 +269,7 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
             if not l2weight:
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
-                deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) ** gamma(beta) - 1)
+                deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) - 1)
                 
             else:
                 K = tl.tenalg.multi_mode_dot(G,factors)
@@ -277,7 +280,9 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
  
         elif beta == 2:
             K = tl.tenalg.multi_mode_dot(G,factors)
-            deltaG = G * ((MVt  / (l1weight + tl.tenalg.multi_mode_dot(G, VVt))) ** gamma(beta)-1)
+            #deltaG = G * ((MVt  / (l1weight + tl.tenalg.multi_mode_dot(G, VVt))) - 1)
+            # TODO confirm with Valentin
+            deltaG = G * (((MVt - l1weight)  / (l2weight*G + tl.tenalg.multi_mode_dot(G, VVt))) - 1)
 
         elif beta == 3:
             K = tl.tenalg.multi_mode_dot(G,factors)
@@ -309,7 +314,7 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
                     #print("core, after ", iters, res, res_0) # for debugging
                     break
 
-    return G
+    return G, iters
 
 def cubic_roots(a_tilde, b_tilde, c_tilde, d_tilde):
     """
