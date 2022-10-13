@@ -407,6 +407,7 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
         core_y = core_n.copy()
         alphamax = alpha0 
         alpha = alpha_reduce*alpha
+        cost_fcn_out = cost0_fct_vals
     else:
         # The solution improved; retain the basic coordinate ascent
         # update as well.
