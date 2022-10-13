@@ -327,12 +327,11 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
             acc_delta = acc_delta_store
 
         # One pass of MU on each updated mode
-        core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, norm_tensor=norm_tensor, fixed_modes=fixed_modes, alpha=alpha, cost_fct_vals_fycn=cost_fct_vals_fycn, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
+        core, factors, core_n, factors_n, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, norm_tensor=norm_tensor, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
 
         # Store the computation time, obj value, alpha, inner iter count
         toc.append(time.time() - tic)
         cost_fct_vals.append(cost)
-        cost_fct_vals_fycn.append(cost_fycn)
         alpha_store.append(alpha)
         [inner_cnt.append(elem) for elem in cnt]
 
@@ -360,14 +359,13 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
         return core, factors
 
 def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, core_n=0, factors_n=0, core_y=0, factors_y=0, beta=2,
-                   fixed_modes=[], alpha=0, cost_fct_vals_fycn=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5):
+                   fixed_modes=[], alpha=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5):
     
     factors_n_up = factors_n.copy()
-    cost_fct_val = cost_fct_vals[-1]
 
     # Store the value of the objective (loss) function at the current
     # iterate (factors_y, core_n).
-    cost0_fct_vals_fycn = cost_fct_vals_fycn[-1]
+    cost0_fct_vals= cost_fct_vals[-1]
 
     # Storing the inner iterations count
     inner_cnt = []
@@ -395,15 +393,18 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     # non-extrapolated solution for the core (core_n).
     # ---> No, we only did that for fast computation. Here there is no such fast comp, so we do it on the true estimates
     # TODO: discuss OK
-    cost_fycn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ 1/2*l2weights[-1]*tl.norm(core_n_up)**2 + l1weights[-1]*tl.sum(core_n_up)
+    cost_fcn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_n_up, factors_n_up), beta)+ 1/2*l2weights[-1]*tl.norm(core_n_up)**2 + l1weights[-1]*tl.sum(core_n_up)
     for mode in modes_list:
-        cost_fycn = cost_fycn + 1/2*l2weights[mode]*tl.norm(factors_n_up[mode])**2 + l1weights[mode]*tl.sum(factors_n_up[mode])
+        cost_fcn = cost_fcn + 1/2*l2weights[mode]*tl.norm(factors_n_up[mode])**2 + l1weights[mode]*tl.sum(factors_n_up[mode])
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
-    if(cost_fycn >=cost0_fct_vals_fycn):
-        # The solution did not improve, so restart the extrapolation
-        # scheme.
+    if(cost_fcn >=cost0_fct_vals):
+        # The solution did not improve, so restart the extrapolation scheme.
+        # Factors secondary sequence is set to the primary one
+        # output factors are the inputs, not the updated factors
+        # reducing alpha
+        # keeping same cost
         factors_y = factors_n.copy()
         core_y = core_n.copy()
         alphamax = alpha0 
@@ -411,23 +412,26 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     else:
         # The solution improved; retain the basic coordinate ascent
         # update as well.
+        # Output updated factors, increase alpha, update cost for output
         factors_n = factors_n_up.copy()
         core_n = core_n_up.copy()
         alpha = np.minimum(alphamax,alpha*alpha_increase)
         alpha0 = alpha
         #alphamax = np.minimum(0.99,alphamax_increase*alphamax)
         alphamax = np.minimum(2,alphamax_increase*alphamax) # hard cap at 2
+        cost_fcn_out = cost_fcn
 
     # If the solution improves the "current best" estimate, update the
     # current best estimate using the non-extrapolated estimates of the
     # core (core_n) and the extrapolated estimates of the factors (factors_y).
-    if(cost_fycn < cost_fct_vals[-1]):
-        factors = factors_y.copy()
-        core = core_n_up.copy()
-        cost_fct_val = cost_fycn
+    # TODO: Removed, discuss
+    #   if(cost_fycn < cost_fct_vals[-1]):
+        #factors = factors_y.copy()
+        #core = core_n_up.copy()
+        #cost_fct_val = cost_fycn
 
 
-    return core, factors, core_n, factors_n, core_y, factors_y, cost_fct_val, cost_fycn, alpha, alpha0, alphamax, inner_cnt
+    return core, factors, core_n, factors_n, core_y, factors_y, cost_fcn_out, alpha, alpha0, alphamax, inner_cnt
 
 #def compute_sntd_mu(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100, tol=1e-6,
            #fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
