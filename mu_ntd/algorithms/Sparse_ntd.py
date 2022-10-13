@@ -265,8 +265,6 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
     factors = factors_in.copy()
     tensor = tensor_in
 
-    norm_tensor = tl.norm(tensor, 2)
-
     # initialisation - declare local varaibles
     cost_fct_vals = []     # value of the objective at the "best current" estimates
     cost_fct_vals_fycn=[]  # value of the objective at (factors_y, core_n)
@@ -327,7 +325,7 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
             acc_delta = acc_delta_store
 
         # One pass of MU on each updated mode
-        core, factors, core_n, factors_n, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, norm_tensor=norm_tensor, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
+        core, factors, core_n, factors_n, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
 
         # Store the computation time, obj value, alpha, inner iter count
         toc.append(time.time() - tic)
