@@ -23,7 +23,7 @@ def gamma(beta):
     else:
         return 1
 
-def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=50, acc_alpha=0.5, acc_delta=0.01, atime=1):
+def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=50, acc_alpha=0.5, acc_delta=0.5, atime=1):
     """
     ============================================================
     Sparse Beta-Divergence NMF solved with Multiplicative Update
@@ -172,7 +172,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                     break
     return U, iters
 
-def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=50, acc_delta=0.01):
+def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inner=50, acc_delta=0.5):
     """
     TODO ACCELERATION
 
