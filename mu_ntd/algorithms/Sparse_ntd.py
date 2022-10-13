@@ -251,7 +251,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     else:
         raise err.InvalidInitializationType('Initialization type not understood: ' + init)
 
-    return compute_sntd_mu_HER(tensor, ranks, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
+    return compute_sntd_mu_HER(tensor, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
                        fixed_modes = fixed_modes, accelerate=accelerate,
                        verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner)
 
@@ -385,7 +385,7 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     # Note that when alpha is zero, core_y = core_n.
     core_n_up, cnt = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[-1], l1weight=l1weights[-1],
                                  epsilon=epsilon, iter_inner=iter_inner, acc_delta=acc_delta)
-    core_y = np.maximum(core_n_up+alpha*(core_n_up-core_n), epsilon) #TODO check bug correction core_n_up?
+    core_y = np.maximum(core_n_up+alpha*(core_n_up-core_n), epsilon)
     inner_cnt.append(cnt)
 
     # Compute the value of the objective (loss) function at the
