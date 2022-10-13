@@ -258,7 +258,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
 
 def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
            fixed_modes = [], beta = 2, accelerate=True,
-           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=20):
+           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=50):
 
     # initialisation - store the input varaibles
     core = core_in.copy()
@@ -360,7 +360,7 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
         return core, factors
 
 def one_sntd_step_mu_HER(tensor, ranks, l2weights=0, l1weights=0, in_core=0, in_factors=0, in_core_n=0, in_factors_n=0, in_core_y=0, in_factors_y=0, beta=2, norm_tensor=1,
-                   fixed_modes=[], alpha=0, cost_fct_vals_fycn=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=20, acc_delta=0.01):
+                   fixed_modes=[], alpha=0, cost_fct_vals_fycn=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.01):
     # No Copy
     core = in_core#.copy()
     factors = in_factors#.copy()
