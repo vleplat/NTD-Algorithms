@@ -256,7 +256,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
                        verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner)
 
 
-def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
+def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
            fixed_modes = [], beta = 2, accelerate=True,
            verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=50):
 
@@ -327,7 +327,7 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
             acc_delta = acc_delta_store
 
         # One pass of MU on each updated mode
-        core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, ranks, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, norm_tensor=norm_tensor, fixed_modes=fixed_modes, alpha=alpha, cost_fct_vals_fycn=cost_fct_vals_fycn, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
+        core, factors, core_n, factors_n, core_y, factors_y, cost, cost_fycn, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_n=core_n, factors_n=factors_n, core_y=core_y, factors_y=factors_y, beta=beta, norm_tensor=norm_tensor, fixed_modes=fixed_modes, alpha=alpha, cost_fct_vals_fycn=cost_fct_vals_fycn, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
 
         # Store the computation time, obj value, alpha, inner iter count
         toc.append(time.time() - tic)
@@ -359,7 +359,7 @@ def compute_sntd_mu_HER(tensor_in, ranks, l2weights, l1weights, core_in, factors
     else:
         return core, factors
 
-def one_sntd_step_mu_HER(tensor, ranks, l2weights=0, l1weights=0, core=0, factors=0, core_n=0, factors_n=0, core_y=0, factors_y=0, beta=2, norm_tensor=1,
+def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, core_n=0, factors_n=0, core_y=0, factors_y=0, beta=2,
                    fixed_modes=[], alpha=0, cost_fct_vals_fycn=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5):
     
     factors_n_up = factors_n.copy()
