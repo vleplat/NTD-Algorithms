@@ -270,7 +270,6 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
                 deltaG = G * ((tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors]) / (l1weight + C)) - 1)
-                
             else:
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
