@@ -274,6 +274,12 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
     toc = [0]
     alpha_store = []
     inner_cnt = []
+    
+    # Computing sparsity
+    sparsity = [[0] for i in range(len(tensor.shape)+1)]
+    for i in range(len(tensor.shape)):
+        sparsity[i]= [(np.sum(factors[i]>1e1*epsilon)/np.prod(np.shape(factors[i])))]
+    sparsity[-1] = [(np.sum(core>1e1*epsilon)/np.prod(np.shape(core)))]
 
     # the acceleration parameters
     if accelerate:
@@ -331,6 +337,12 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
         alpha_store.append(alpha)
         [inner_cnt.append(elem) for elem in cnt]
 
+        # Computing sparsity
+        for i in range(len(tensor.shape)):
+            sparsity[i].append(np.sum(factors[i]>1e1*epsilon)/np.prod(np.shape(factors[i])))
+        sparsity[-1].append(np.sum(core>1e1*epsilon)/np.prod(np.shape(core)))
+
+
         if verbose:
             if iteration == 0:
                 print('Initial Obj={}'.format(cost))
@@ -350,7 +362,7 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
         #     break
 
     if return_costs:
-        return core, factors, cost_fct_vals, toc, alpha_store, inner_cnt
+        return core, factors, cost_fct_vals, toc, alpha_store, inner_cnt, sparsity
     else:
         return core, factors
 
@@ -406,7 +418,6 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
         alphamax = alpha0 
         alpha = alpha_reduce*alpha
         cost_fcn_out = cost0_fct_vals
-        print("prout")
     else:
         # The solution improved; retain the basic coordinate ascent
         # update as well.

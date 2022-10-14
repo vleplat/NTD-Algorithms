@@ -107,7 +107,7 @@ def script_run(
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
     core, factors, cost_fct_vals, toc, _, cnt = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                          fixed_modes = [], normalize = 4*[None], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
+                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
 
     #----------------------------------------------
     # Post-processing for checking identification

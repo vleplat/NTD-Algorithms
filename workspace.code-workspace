@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../Plotly examples"
+		},
+		{
+			"path": "../../../code_sandbox/shootout/shootout"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}

@@ -16,15 +16,15 @@ from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
 nb_seeds = 4 # 0 for only plotting
-name_store = "xp_ex_noex_12-10-22"
+name_store = "xp_ex_noex_14-10-22"
 variables={    
-    "U_lines" : [40],#,200],
+    "U_lines" : [40,200],
     "V_lines" : [40],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
     "accelerate": [False],
     "iter_inner": [50],
-    "extrapolate": [False, False],
+    "extrapolate": [False, True],
     "l1weight": [0],# 1e8, 1e6, 100], # works? syntax? do in another test
     "SNR" : [80],
     "sparse_data": [False] # do each test manually for nicer plots
@@ -38,7 +38,7 @@ def script_run(
     ranks = [4,5,6],
     SNR = 20,
     tol = 0,
-    n_iter_max = 500,
+    n_iter_max = 3000,
     beta = 1,
     iter_inner = 3,
     #l2weight = [1, 1, 1, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
@@ -102,7 +102,7 @@ def script_run(
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
     core, factors, cost_fct_vals, toc, alpha, _ = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                          fixed_modes = [], normalize = 4*[None], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
+                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
     #print(alpha)
     #print(core)
 
@@ -166,13 +166,13 @@ fig2.update_traces(
     error_y_thickness = 0.3
 )
 fig.update_xaxes(matches=None)
-#fig.update_yaxes(matches=None)
+fig.update_yaxes(matches=None)
 fig.update_xaxes(showticklabels=True)
-#fig.update_yaxes(showticklabels=True)
-#fig2.update_xaxes(matches=None)
-#fig2.update_yaxes(matches=None)
-#fig2.update_xaxes(showticklabels=True)
-#fig2.update_yaxes(showticklabels=True)
+fig.update_yaxes(showticklabels=True)
+fig2.update_xaxes(matches=None)
+fig2.update_yaxes(matches=None)
+fig2.update_xaxes(showticklabels=True)
+fig2.update_yaxes(showticklabels=True)
 # time
 #fig2 = px.line(df_conv, x="timings", y="errors", color="accelerate", log_y=True, line_group="groups", facet_col="iter_inner", facet_row="extrapolate")
 
