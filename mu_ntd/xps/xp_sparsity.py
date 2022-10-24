@@ -15,7 +15,7 @@ import pandas as pd
 from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
-nb_seeds = 2 # 0 for only plotting
+nb_seeds = 0 # 0 for only plotting
 name_store = "xp_sparsity_14-10-22_core&factors"
 variables={    
     "U_lines" : [40],

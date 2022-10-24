@@ -109,6 +109,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
         if beta == 0:
             K = np.dot(U,V)
             if not l2weight:
+                # ?? TODO Valou
                 denom = np.dot(K**(beta-1),V.T) + l1weight
                 deltaU = U * ((np.dot((K**(beta-2) * M),V.T) / denom) ** gamma(beta) -1)
             else:
