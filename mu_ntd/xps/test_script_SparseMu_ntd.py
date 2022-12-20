@@ -29,7 +29,8 @@ variables={
 #ranks=[[4,5,6],[10,2,2],[15,15,15]],
 #sigma=[0,1e-2],
 #iter_inner= [1,3,10])
-@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/",
+name_store = "test_script_SparseMu_ntd_20122022"
+@run_and_track(algorithm_names=["l1l2 MU", "l1l2 MU with HER"], path_store="./Results/",name_store=name_store,
                 verbose=True, nb_seeds=2,**variables)
 def script_run(
     U_lines = 100,
@@ -84,12 +85,12 @@ def script_run(
 
 
     # ### Beta = 1 - MU no extrapolation no acceleration
-    core, factors, cost_fct_vals, toc, alpha = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=False)
+    core, factors, cost_fct_vals, toc, alpha, inner_cnt, sparsity = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+                                                fixed_modes = [], verbose = False, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=False)
     # ### Beta = 1 - MU extrapolation and acceleration
-    core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], normalize = 4*[None], verbose = False, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=True)
-
+    core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER, inner_cnt_HER, sparsity_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+                                                fixed_modes = [], verbose = False, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=True)
+    # normalize = 4*[None]
     #----------------------------------------------
     # Post-processing for checking identification
     #----------------------------------------------
@@ -103,38 +104,48 @@ def script_run(
     return {"errors": [cost_fct_vals, cost_fct_vals_HER], "timings": [toc,toc_HER]}#, "alpha":[alpha,alpha_HER], "congruence": [factors[2].T@factors_0[2],factors_HER[2].T@factors_0[2]]}
 
 
+# Plotting
+name_read = "Results/"+name_store
+df = pd.read_pickle(name_read)
+import plotly.express as px
+import shootout.methods.post_processors as pp
+import shootout.methods.plotters as pt
 
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Reporting
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#print("-----------------------------------------------------------------------")
-#print("Reporting results:")
-#print("-----------------------------------------------------------------------")
-#print("Final loss function value:")
-#print(f"MU, Beta = 1       : {cost_fct_vals[-1]}, converged in {len(cost_fct_vals) - 1} iterations.")
-#print(f"MU - HER, Beta = 1 : {cost_fct_vals_HER[-1]}, converged in {len(cost_fct_vals_HER) - 1} iterations.")
-#print("-----------------------------------------------------------------------")
-#print("Final relative construction error:")
-#print(f"MU, Beta = 1       : {tl.norm(T-tl.tenalg.multi_mode_dot(core, factors))/tl.norm(T)*100} %")
-#print(f"MU - HER, Beta = 1 : {tl.norm(T-tl.tenalg.multi_mode_dot(core_HER, factors_HER))/tl.norm(T)*100} %")
-
-## first iteration shown?
-#it1 = 0
-
-#plt.figure(1)
-#plt.semilogy(cost_fct_vals[it1:], color='blue', label='MU HER off')
-#plt.semilogy(cost_fct_vals_HER[it1:], color='black', label='MU HER on')
-#plt.xlabel('Iteration number')
-#plt.ylabel('Objective function')
-#plt.title('Sparse beta-div NTD')
-#plt.legend()
-#plt.show()
-
-#plt.figure(2)
-#plt.semilogy(toc[it1:],cost_fct_vals[it1:], color='blue', label='MU HER off')
-#plt.semilogy(toc_HER[it1:],cost_fct_vals_HER[it1:], color='black', label='MU HER on')
-#plt.xlabel('CPU time')
-#plt.ylabel('Objective function')
-#plt.title('Sparse beta-div NTD')
-#plt.legend()
-#plt.show()
+# small tweaks to variables to adjust ranks #TODO adjust variables
+variables.pop("ranks")
+ovars = list(variables.keys())
+# 0. Interpolating time (choose fewer points for better vis)
+df = pp.interpolate_time_and_error(df, npoints = 100, adaptive_grid=True)
+# 1. Convergence Plots
+df_conv_it = pp.df_to_convergence_df(df,other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
+df_conv_time = pp.df_to_convergence_df(df,other_names=ovars, groups=True,groups_names=ovars, err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
+# renaming errors and time for convenience
+df_conv_time = df_conv_time.rename(columns={"timings_interp": "timings", "errors_interp": "errors"})
+# 2. Converting to median for iterations and timings
+df_conv_median_it = pp.median_convergence_plot(df_conv_it, type="iterations")
+df_conv_median_time = pp.median_convergence_plot(df_conv_time, type="timings")
+# downsampling it by 5 for plotting (100 points per plot)
+#df_conv_median_it = df_conv_median_it[df_conv_median_it["it"]%5==0]
+# 3. Making plots
+fig = px.line(df_conv_median_it, x="it", y="errors", color="sparse_data", log_y=True, facet_col="l2weight", facet_row="l1weight", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white") #sparsity? zip with extrapolate? will fail because groups are removed?
+fig2 = px.line(df_conv_median_time, x="timings", y="errors", color="sparse_data", log_y=True, facet_col="l2weight", facet_row="l1weight", error_y="q_errors_p", error_y_minus="q_errors_m", template="plotly_white")
+# smaller linewidth
+fig.update_traces(
+    selector=dict(),
+    line_width=3,
+    error_y_thickness = 0.3
+)
+fig2.update_traces(
+    selector=dict(),
+    line_width=3,
+    error_y_thickness = 0.3
+)
+fig.update_xaxes(matches=None)
+#fig.update_yaxes(matches=None)
+fig.update_xaxes(showticklabels=True)
+#fig.update_yaxes(showticklabels=True)
+#fig2.update_xaxes(matches=None)
+#fig2.update_yaxes(matches=None)
+#fig2.update_xaxes(showticklabels=True)
+#fig2.update_yaxes(showticklabels=True)
+# time
