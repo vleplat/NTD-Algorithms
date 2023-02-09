@@ -18,10 +18,41 @@ import nn_fac.beta_divergence as beta_div
 import numpy as np
 
 
+def opt_scaling(regs, hom_deg):
+    '''
+    Computes the multiplicative constants to scale factors such that regularizations are balanced.
+    The problem solved is 
+        min_{a_i} \sum a_i s.t.  \prod a_i^{p_i}=q
+    where a_i = regs[i] and p_i = hom_deg[i]
+
+    Parameters
+    ----------
+    regs: list of floats
+        the input regularization values
+    hom_deg: list of floats
+        homogeneity degrees of each regularization term
+
+    Returns
+    -------
+    scales: list of floats
+        the scale to balance the factors. Its product should be one (scale invariance).
+    '''
+    # 1. compute q
+    prod_q = np.prod(regs)
+
+    # 2. compute a*
+    a_ast = prod_q**(np.prod(hom_deg)/np.sum(hom_deg))
+
+    # 3. compute scales
+    scales = [(a_ast/regs[i])**(1/hom_deg[i]) for i in range(len(regs))]
+    
+    return scales
+
+
 ######################### Temporary, to test mu and not break everything
 def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core_0 = None, factors_0 = [], n_iter_max=100, tol=1e-6,
            fixed_modes = [], beta = 2, accelerate=True,
-           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12, iter_inner=20):
+           verbose=False, return_costs=False, deterministic=False, extrapolate=False, epsilon=1e-12, iter_inner=20, opt_rescale=True):
     """
     ======================================
     Sparse Nonnegative Tucker Decomposition (sNTD) with beta-div loss
@@ -127,7 +158,9 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     iter_inner: int
         Number of inner iterations for each factor/core update.
         Default: 20
-
+    opt_rescale: boolean
+        Determines if the optimal rescaling is used to minimize regularization terms with respect to factors scale.
+        Default: True
     Returns
     -------
     core: tensorly tensor
@@ -253,12 +286,12 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
 
     return compute_sntd_mu_HER(tensor, l2weights, l1weights, core, factors, n_iter_max=n_iter_max,
                        fixed_modes = fixed_modes, accelerate=accelerate,
-                       verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner)
+                       verbose=verbose, return_costs=return_costs, beta = beta, epsilon=epsilon, extrapolate=extrapolate, iter_inner=iter_inner, opt_rescale=opt_rescale)
 
 
 def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_iter_max=100,
            fixed_modes = [], beta = 2, accelerate=True,
-           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=50):
+           verbose=False, return_costs=False, epsilon=1e-12, extrapolate=False, iter_inner=50, opt_rescale=True):
 
     # initialisation - store the input varaibles
     core = core_in.copy()
@@ -329,7 +362,7 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
             acc_delta = acc_delta_store
 
         # One pass of MU on each updated mode
-        core, factors, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_y=core_y, factors_y=factors_y, beta=beta, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta)
+        core, factors, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_y=core_y, factors_y=factors_y, beta=beta, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta, opt_rescale=opt_rescale)
 
         # Store the computation time, obj value, alpha, inner iter count
         toc.append(time.time() - tic)
@@ -367,9 +400,10 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
         return core, factors
 
 def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, core_y=0, factors_y=0, beta=2,
-                   fixed_modes=[], alpha=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5):
+                   fixed_modes=[], alpha=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5, opt_rescale=True):
     
     factors_up = factors.copy()
+    ndims = tl.ndim(tensor)
 
     # Store the value of the objective (loss) function at the current
     # iterate (factors_y, core_n).
@@ -379,7 +413,7 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     inner_cnt = []
 
     # Generating the mode update sequence
-    modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
+    modes_list = [mode for mode in range(ndims) if mode not in fixed_modes]
 
     # Compute the extrapolated update for the factors.
     # Note that when alpha is zero, factors_y = factors.
@@ -387,7 +421,19 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
         factors_up[mode], cnt = mu.mu_betadivmin(factors_y[mode], tl.unfold(tl.tenalg.multi_mode_dot(core_y, factors_y, skip = mode), mode),
             tl.unfold(tensor,mode), beta, l2weight=l2weights[mode], l1weight=l1weights[mode], epsilon=epsilon, iter_inner=iter_inner,
             acc_delta=acc_delta)
+        
+        # Optimal Rescaling
+        if opt_rescale:
+            regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
+            hom_deg = [l1weights[i]>0 + 2*l2weights[i]>0 for i in range(ndims)]
+            scales = opt_scaling(regs,hom_deg)
+            for submode in range(ndims):
+                factors_up[submode] = factors_up[submode]*scales[submode]
+
+        # Extrapolation
         factors_y[mode] = np.maximum(factors_up[mode]+alpha*(factors_up[mode]-factors[mode]),epsilon)
+
+
         inner_cnt.append(cnt)
     # Compute the extrapolated update for the core.
     # Note that when alpha is zero, core_y = core_n.
