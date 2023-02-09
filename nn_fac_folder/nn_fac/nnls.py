@@ -164,22 +164,14 @@ def hals_nnls_acc(UtM, UtU, in_V, maxiter=500, atime=None, alpha=0.5, delta=0.01
         nodelta = 0
         for k in range(r):
 
-            if UtU[k,k] != 0:
-
-                #if sparsity_coefficient != None: # Using the sparsifying objective function
-                #deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight * np.ones(n)) / UtU[k,k], -V[k,:])
-                # TODO: note maths in manuscript
-                # TODO: dont forget epsilon
-                deltaV = np.maximum((UtM[k,:] - UtU[k,:]@V - l1weight - l2weight*V[k,:]) / (UtU[k,k]+l2weight), -V[k,:] + epsilon)
-                V[k,:] = V[k,:] + deltaV
-
-                #else:
-                #    #deltaV = np.maximum((UtM[k,:]- UtU[k,:]@V) / UtU[k,k],-V[k,:])
-                #    #V[k,:] = V[k,:] + deltaV
-
-                # We change V by deltaV, and keep track of l2 norm of changes
-                nodelta = nodelta + np.dot(deltaV, np.transpose(deltaV))
-
+            if UtU[k, k]:
+                newV = np.clip(
+                    (UtM[k,:] - np.dot(UtU[k,:], V) + UtU[k,k]*V[k,:] - l1weight)
+                    / (UtU[k,k]+l2weight), a_min=epsilon
+                    )
+                rec_error += np.norm(V-newV)**2
+                V[k,:] = newV
+                
                 # Safety procedure, if columns aren't allow to be zero
                 if nonzero and (V[k,:] == 0).all() :
                     V[k,:] = 1e-16*np.max(V)
