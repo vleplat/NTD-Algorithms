@@ -27,9 +27,9 @@ def opt_scaling(regs, hom_deg):
 
     Parameters
     ----------
-    regs: list of floats
+    regs: 1d np array
         the input regularization values
-    hom_deg: list of floats
+    hom_deg: 1d numpy array
         homogeneity degrees of each regularization term
 
     Returns
@@ -38,13 +38,13 @@ def opt_scaling(regs, hom_deg):
         the scale to balance the factors. Its product should be one (scale invariance).
     '''
     # 1. compute q
-    prod_q = np.prod(regs)
+    prod_q = np.prod(regs**(1/hom_deg))
 
-    # 2. compute a*
-    a_ast = prod_q**(np.prod(hom_deg)/np.sum(hom_deg))
+    # 2. compute beta
+    beta = (prod_q*np.prod(hom_deg**(1/hom_deg)))**(1/np.sum(1/hom_deg))
 
     # 3. compute scales
-    scales = [(a_ast/regs[i])**(1/hom_deg[i]) for i in range(len(regs))]
+    scales = [(beta/regs[i]/hom_deg[i])**(1/hom_deg[i]) for i in range(len(regs))]
     
     return scales
 
@@ -160,6 +160,7 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
         Default: 20
     opt_rescale: boolean
         Determines if the optimal rescaling is used to minimize regularization terms with respect to factors scale.
+        Disabled if one of the factors has no regularization.
         Default: True
     Returns
     -------
@@ -403,6 +404,7 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
                    fixed_modes=[], alpha=0, epsilon=1e-12, alpha0=0, alphamax=0, alpha_increase=0, alpha_reduce=0, alphamax_increase=0, cost_fct_vals=0, iter_inner=50, acc_delta=0.5, opt_rescale=True):
     
     factors_up = factors.copy()
+    core_up = core.copy()
     ndims = tl.ndim(tensor)
 
     # Store the value of the objective (loss) function at the current
@@ -423,12 +425,18 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
             acc_delta=acc_delta)
         
         # Optimal Rescaling
+        # TODO: discuss intrication with extrapolation
         if opt_rescale:
             regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
-            hom_deg = [l1weights[i]>0 + 2*l2weights[i]>0 for i in range(ndims)]
-            scales = opt_scaling(regs,hom_deg)
+            regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core_up)**2] 
+            hom_deg = [1.0*(l1weights[i]>0) + 2.0*(l2weights[i]>0) for i in range(ndims+1)] # +1 for the core
+            scales = opt_scaling(np.array(regs),np.array(hom_deg))
             for submode in range(ndims):
                 factors_up[submode] = factors_up[submode]*scales[submode]
+                # should also scale factorsY?
+            core_up = core_up*scales[-1]
+            regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
+            regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
 
         # Extrapolation
         factors_y[mode] = np.maximum(factors_up[mode]+alpha*(factors_up[mode]-factors[mode]),epsilon)
@@ -439,6 +447,17 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     # Note that when alpha is zero, core_y = core_n.
     core_up, cnt = mu.mu_tensorial(core_y, factors_y, tensor, beta, l2weight=l2weights[-1], l1weight=l1weights[-1],
                                  epsilon=epsilon, iter_inner=iter_inner, acc_delta=acc_delta)
+
+    # Optimal Rescaling (core step)
+    if opt_rescale:
+        regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
+        regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
+        hom_deg = [1.0*(l1weights[i]>0) + 2.0*(l2weights[i]>0) for i in range(ndims+1)] # +1 for the core
+        scales = opt_scaling(np.array(regs),np.array(hom_deg))
+        for submode in range(ndims):
+            factors_up[submode] = factors_up[submode]*scales[submode]
+        core_up = core_up*scales[-1]
+
     core_y = np.maximum(core_up+alpha*(core_up-core), epsilon)
     inner_cnt.append(cnt)
 
@@ -448,8 +467,13 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     # ---> No, we only did that for fast computation. Here there is no such fast comp, so we do it on the true estimates
     # TODO: discuss OK
     cost_fcn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_up, factors_up), beta)+ 1/2*l2weights[-1]*tl.norm(core_up)**2 + l1weights[-1]*tl.sum(core_up)
-    for mode in modes_list:
-        cost_fcn = cost_fcn + 1/2*l2weights[mode]*tl.norm(factors_up[mode])**2 + l1weights[mode]*tl.sum(factors_up[mode])
+    regs_facs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
+    cost_fcn += np.sum(regs_facs)
+
+    # Debug
+    regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
+    regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
+    print(f"Regs {regs}")
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
@@ -475,16 +499,6 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
         #alphamax = np.minimum(0.99,alphamax_increase*alphamax)
         alphamax = np.minimum(2,alphamax_increase*alphamax) # hard cap at 2
         cost_fcn_out = cost_fcn
-
-    # If the solution improves the "current best" estimate, update the
-    # current best estimate using the non-extrapolated estimates of the
-    # core (core_n) and the extrapolated estimates of the factors (factors_y).
-    # TODO: Removed, discuss
-    #   if(cost_fycn < cost_fct_vals[-1]):
-        #factors = factors_y.copy()
-        #core = core_n_up.copy()
-        #cost_fct_val = cost_fycn
-
 
     return core, factors, core_y, factors_y, cost_fcn_out, alpha, alpha0, alphamax, inner_cnt
 
