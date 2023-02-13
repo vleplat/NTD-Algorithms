@@ -237,6 +237,12 @@ def sntd_mu(tensor, ranks, l2weights=None, l1weights=None, init = "random", core
     if any(truthtable):
         raise err.InvalidArgumentValue("A l2 and l1 regularization have been imposed on the same mode, which is not supported at the moment")
 
+    # Disable rescale if l1 and l2 are all zero
+    if not any(l1weights) and not any(l2weights):
+        if verbose:
+            print('no reg -> no scaling') # debug
+        opt_rescale=False
+
     # A bunch of checks for the inputs
     #TODO: set them as warnings
     nb_modes = len(tensor.shape)

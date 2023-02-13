@@ -16,18 +16,19 @@ from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
 nb_seeds = 4 # 0 for only plotting
-name_store = "xp_ex_noex_14-10-22"
+name_store = "xp_ex_noex_13-02-23"
 variables={    
-    "U_lines" : [40,200],
-    "V_lines" : [40],
+    "U_lines" : [20,200],
+    "V_lines" : [20],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
     "accelerate": [False],
     "iter_inner": [50],
     "extrapolate": [False, True],
-    "l1weight": [0],# 1e8, 1e6, 100], # works? syntax? do in another test
+    "l1weight": [1.0],# 1e8, 1e6, 100], # works? syntax? do in another test
     "SNR" : [80],
-    "sparse_data": [False] # do each test manually for nicer plots
+    "sparse_factors": [False], # do each test manually for nicer plots
+    "sparse_core": [True], # do each test manually for nicer plots
         }
 @run_and_track(algorithm_names="l1 MU", path_store="./Results/", name_store=name_store,
                 verbose=True, nb_seeds=nb_seeds, seeded_fun=True, **variables)
@@ -38,7 +39,7 @@ def script_run(
     ranks = [4,5,6],
     SNR = 20,
     tol = 0,
-    n_iter_max = 3000,
+    n_iter_max = 1000,
     beta = 1,
     iter_inner = 3,
     #l2weight = [1, 1, 1, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
@@ -49,18 +50,21 @@ def script_run(
     extrapolate = False,
     accelerate = False,
     seed = 0, # will be populated by `seed` in shootout
-    sparse_data = False
+    sparse_factors = False,
+    sparse_core = False,
+    scale=True
     ):
     # weights
-    l2weight = [l2weight, l2weight, l2weight, 0]
-    l1weight = [0, 0, 0, l1weight]
-    if l1weight==0:
-        l2weight[-1] = l2weight[0] #setting weight on core if no sparsity
+    #l2weights = [l2weight, l2weight, l2weight, 0]
+    l2weights = [l1weight, l1weight, l1weight, 0]
+    l1weights = [0, 0, 0, l1weight]
+    #if l1weights==0:
+        #l2weights[-1] = l2weights[0] #setting weight on core if no sparsity
     # Seeding 
     rng = np.random.RandomState(seed+hash("sNTD")%(2**32))
     # Generation of the input data tensor T # dense
     factors_0 = []
-    if not sparse_data:
+    if not sparse_factors:
         factors_0.append(rng.rand(U_lines, ranks[0]))
         factors_0.append(rng.rand(V_lines, ranks[1]))
         factors_0.append(rng.rand(W_lines, ranks[2]))
@@ -76,10 +80,10 @@ def script_run(
         factors_0.append(H)
         factors_0.append(Q)
     core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
-    if sparse_data:
+    if sparse_core:
         # TODO: care for 0 core slices, regenerate if columns-rows-fibers are 0
-        core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
-        core_0[core_0<0]=0 #sparsifying the gt solution
+        core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
+        core_0[core_0<(0.5*np.median(core_0))]=0 #sparsifying the gt solution
 
     # generate noise according to input SNR
     Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 
@@ -101,8 +105,8 @@ def script_run(
 
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
-    core, factors, cost_fct_vals, toc, alpha, _ = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
+    core, factors, cost_fct_vals, toc, alpha, _, sparsity = SNTD.sntd_mu(T, ranks, l2weights=l2weights, l1weights=l1weights, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate, opt_rescale=scale)
     #print(alpha)
     #print(core)
 
@@ -122,11 +126,11 @@ def script_run(
     #sparsity_ratio = nnz/nb_entries # 1 for dense, 0 for null
     
     # Core sparsity tracking
-    nb_entries = np.prod(ranks)
-    nnz = np.sum(core>1e-8) 
-    sparsity_ratio = nnz/nb_entries # 1 for dense, 0 for null
+    #nb_entries = np.prod(ranks)
+    #nnz = np.sum(core>1e-8) 
+    #sparsity_ratio = nnz/nb_entries # 1 for dense, 0 for null
 
-    return {"errors": [cost_fct_vals], "timings": [toc], "sparsity": sparsity_ratio}#, "alpha":[alpha,alpha_HER], "congruence": [factors[2].T@factors_0[2],factors_HER[2].T@factors_0[2]]}
+    return {"errors": [cost_fct_vals], "timings": [toc], "sparsity": [sparsity[-1]]}#, "alpha":[alpha,alpha_HER], "congruence": [factors[2].T@factors_0[2],factors_HER[2].T@factors_0[2]]}
 
 # Plotting
 name_read = "Results/"+name_store

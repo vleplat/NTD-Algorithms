@@ -42,8 +42,6 @@ def script_run(
     n_iter_max = 1500,#1500
     beta = 1,
     iter_inner = 3,
-    #l2weight = [1, 1, 1, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
-    #l1weight = [0, 0, 0, 1],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
     l1weight = 0,  # \mu_g)
     l2weight = 1,#1e-8,
     verbose=False,
@@ -53,12 +51,12 @@ def script_run(
     sparse_data = False
     ):
     # weights
-    l2weight = [l2weight, l2weight, l2weight, l2weight]
-    l1weight = [l1weight, l1weight, l1weight, l1weight]
+    l2weights = [l2weight, l2weight, l2weight, l2weight]
+    l1weights = [l1weight, l1weight, l1weight, l1weight]
     #l2weight = [l2weight, l2weight, l2weight, 0]
     #l1weight = [0, 0, 0, l1weight]
-    if l1weight==0:
-        l2weight[-1] = l2weight[0] #setting weight on core if no sparsity
+    if l1weights==0:
+        l2weights[-1] = l2weights[0] #setting weight on core if no sparsity
     # Seeding 
     rng = np.random.RandomState(seed+hash("sNTD")%(2**32))
     # Generation of the input data tensor T # dense
@@ -105,7 +103,7 @@ def script_run(
 
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
-    core, factors, cost_fct_vals, toc, alpha, _, sparsity = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+    core, factors, cost_fct_vals, toc, alpha, _, sparsity = SNTD.sntd_mu(T, ranks, l2weights=l2weights, l1weights=l1weights, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
                                           fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
     
     #----------------------------------------------

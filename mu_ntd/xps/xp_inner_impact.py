@@ -17,18 +17,21 @@ from shootout.methods.runners import run_and_track
 
 # todo shootout: write report with parameters
 nb_seeds = 5 # 0 for only plotting
-name_store = "xp_inner_impact_12-10-22_only_acc"
+name_store = "xp_inner_impact_13-02-23"
 variables={    
-    "U_lines" : [40],#todo fatten for paper tests
-    "V_lines" : [40],
+    "U_lines" : [20],#todo fatten for paper tests
+    "V_lines" : [20],
     "beta" : [1],
     "ranks" : [[4,5,6]], #todo split?
     "accelerate": [False, 3e-1, 5e-1, 7e-1],# [False, 1e-1, 2e-1, 5e-1, 7e-1], no impact of 0.1 and 0.2
     "iter_inner": [50], #[1, 5, 10, 20, 50, 100, 200, 500],
     "extrapolate": [False],#, True],
     "SNR" : [80],
-    "sparse_data": [False] # should I check?
-        }
+    "sparse_factors": [False], # should I check?
+    "sparse_core": [True], # should I check?
+    "scale": True,
+    "l1weight": [0.5],
+    }
 @run_and_track(algorithm_names="l1 MU", path_store="./Results/", name_store=name_store,
                 verbose=True, nb_seeds=nb_seeds, seeded_fun=True, **variables)
 def script_run(
@@ -38,7 +41,7 @@ def script_run(
     ranks = [4,5,6],
     SNR = 20,
     tol = 0,
-    n_iter_max = 1500,
+    n_iter_max = 1000,
     beta = 1,
     iter_inner = 3,
     #l2weight = 0,#[0, 0, 0, 0],  #(\mu_W, \mu_H, \mu_Q, \mu_g)
@@ -49,7 +52,9 @@ def script_run(
     extrapolate = False,
     accelerate = False,
     seed = 0, # will be populated by `seed` in shootout
-    sparse_data = False
+    sparse_factors = False,
+    sparse_core = False,
+    scale = True
     ):
     # Adaptive max iter, linear scale
     n_iter_max = int(n_iter_max*100/np.maximum(iter_inner, 2)) # will be 1500 for 100 iter inner, 6000 when accelerate is 0.5 
@@ -57,15 +62,16 @@ def script_run(
     #    n_iter_max = int(n_iter_max*(1+3*accelerate))
 
     # weights processings
-    l2weight = [l2weight, l2weight, l2weight, 0]
-    l1weight = [0, 0, 0, l1weight]
-    if l1weight==0:
-        l2weight[-1] = l2weight[0] #setting ridge on core if no sparsity but ridge on factors
+    #l2weights = [l2weight, l2weight, l2weight, 0]
+    l2weights = [l1weight, l1weight, l1weight, 0]
+    l1weights = [0, 0, 0, l1weight]
+    if l1weights==0:
+        l2weights[-1] = l2weights[0] #setting ridge on core if no sparsity but ridge on factors
     # Seeding 
     rng = np.random.RandomState(seed+hash("sNTD")%(2**32))
     # Generation of the input data tensor T
     factors_0 = []
-    if not sparse_data:
+    if not sparse_factors:
         factors_0.append(rng.rand(U_lines, ranks[0]))
         factors_0.append(rng.rand(V_lines, ranks[1]))
         factors_0.append(rng.rand(W_lines, ranks[2]))
@@ -81,10 +87,9 @@ def script_run(
         factors_0.append(H)
         factors_0.append(Q)
     core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
-    if sparse_data:
-        # TODO: care for 0 core slices, regenerate if columns-rows-fibers are 0
-        core_0 = rng.randn(ranks[0], ranks[1], ranks[2])
-        core_0[core_0<0]=0 #sparsifying the gt solution
+    if sparse_core:
+        core_0 = rng.rand(ranks[0], ranks[1], ranks[2])
+        core_0[core_0<(0.5*np.median(core_0))]=0 #sparsifying the gt solution
 
     # generate noise according to input SNR
     Ttrue = tl.tenalg.multi_mode_dot(core_0, factors_0) 
@@ -106,8 +111,8 @@ def script_run(
 
 
     # ### Beta = 1 - MU no acceleration, fixed 2 inner
-    core, factors, cost_fct_vals, toc, _, cnt = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate)
+    core, factors, cost_fct_vals, toc, _, cnt, _ = SNTD.sntd_mu(T, ranks, l2weights=l2weights, l1weights=l1weights, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
+                                          fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=extrapolate, iter_inner=iter_inner, accelerate=accelerate, opt_rescale=scale)
 
     #----------------------------------------------
     # Post-processing for checking identification
