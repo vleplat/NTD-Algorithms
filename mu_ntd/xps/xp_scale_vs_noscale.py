@@ -83,7 +83,7 @@ def script_run(
                                                 fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=False, opt_rescale=scale)
     # ### Beta = 1 - MU extrapolation and acceleration
     core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER, inner_cnt_HER, sparsity_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=True, opt_rescale=scale)
+                                                fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=False, opt_rescale=scale)
     # normalize = 4*[None]
     #----------------------------------------------
     # Post-processing for checking identification

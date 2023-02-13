@@ -337,21 +337,10 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
         alpha_increase = 1.1       #1.1 max
         alpha_reduce = 0.2         #0.75 in andersen
         alphamax_increase  = 1.05
-    else:
-        # no extrapolation
-        alpha=0
-        if verbose:
-            print('Initial Alpha={}'.format(alpha))
-
-        alpha0 = alpha             #extrapolation parameter setting from last improvement
-        alphamax = 0               #1 but Andy told us to increase it to have fun, let us see
-        alpha_increase = 1       #1.1 max
-        alpha_reduce = 1         #0.75
-        alphamax_increase  = 1
-    alpha_store.append(alpha)
-
-    core_y = core.copy()        # extrapolated factor side estimates
-    factors_y = factors.copy()  # extrapolated core side estimates
+        alpha_store.append(alpha)
+        
+        core_y = core.copy()        # extrapolated factor side estimates
+        factors_y = factors.copy()  # extrapolated core side estimates
 
     # Iterate over one step of NTD
     for iteration in tqdm(range(n_iter_max)):
@@ -363,12 +352,16 @@ def compute_sntd_mu_HER(tensor_in, l2weights, l1weights, core_in, factors_in, n_
             acc_delta = acc_delta_store
 
         # One pass of MU on each updated mode
-        core, factors, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_y=core_y, factors_y=factors_y, beta=beta, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta, opt_rescale=opt_rescale)
+        if extrapolate:
+            core, factors, core_y, factors_y, cost, alpha, alpha0, alphamax, cnt = one_sntd_step_mu_HER(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, core_y=core_y, factors_y=factors_y, beta=beta, fixed_modes=fixed_modes, alpha=alpha, epsilon=epsilon, alpha0=alpha0, alphamax=alphamax, alpha_increase=alpha_increase, alpha_reduce=alpha_reduce, alphamax_increase=alphamax_increase, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta, opt_rescale=opt_rescale)
+            alpha_store.append(alpha)
+        else:
+            core, factors, cost, cnt = one_sntd_step_mu(tensor, l2weights=l2weights, l1weights=l1weights, core=core, factors=factors, beta=beta, fixed_modes=fixed_modes, epsilon=epsilon, cost_fct_vals=cost_fct_vals, iter_inner=iter_inner, acc_delta=acc_delta, opt_rescale=opt_rescale)
+
 
         # Store the computation time, obj value, alpha, inner iter count
         toc.append(time.time() - tic)
         cost_fct_vals.append(cost)
-        alpha_store.append(alpha)
         [inner_cnt.append(elem) for elem in cnt]
 
         # Computing sparsity
@@ -428,15 +421,15 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
         # TODO: discuss intrication with extrapolation
         if opt_rescale:
             regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
-            regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core_up)**2] 
+            regs += [l1weights[-1]*np.sum(np.abs(core_up)) + 1/2*l2weights[-1]*tl.norm(core_up)**2] 
             hom_deg = [1.0*(l1weights[i]>0) + 2.0*(l2weights[i]>0) for i in range(ndims+1)] # +1 for the core
             scales = opt_scaling(np.array(regs),np.array(hom_deg))
             for submode in range(ndims):
                 factors_up[submode] = factors_up[submode]*scales[submode]
+                #factors_y[submode] = factors_y[submode]*scales[submode]
                 # should also scale factorsY?
             core_up = core_up*scales[-1]
-            regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
-            regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
+            #core_y = core_y*scales[-1]
 
         # Extrapolation
         factors_y[mode] = np.maximum(factors_up[mode]+alpha*(factors_up[mode]-factors[mode]),epsilon)
@@ -465,15 +458,9 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
     # extrapolated solution for the factors (factors_y) and the
     # non-extrapolated solution for the core (core_n).
     # ---> No, we only did that for fast computation. Here there is no such fast comp, so we do it on the true estimates
-    # TODO: discuss OK
     cost_fcn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core_up, factors_up), beta)+ 1/2*l2weights[-1]*tl.norm(core_up)**2 + l1weights[-1]*tl.sum(core_up)
     regs_facs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
     cost_fcn += np.sum(regs_facs)
-
-    # Debug
-    regs = [l1weights[i]*np.sum(np.abs(factors_up[i])) + 1/2*l2weights[i]*np.linalg.norm(factors_up[i])**2 for i in range(ndims)]
-    regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
-    print(f"Regs {regs}")
 
     # Update the extrapolation parameters following Algorithm 3 of
     # Ang & Gillis (2019).
@@ -502,95 +489,56 @@ def one_sntd_step_mu_HER(tensor, l2weights=0, l1weights=0, core=0, factors=0, co
 
     return core, factors, core_y, factors_y, cost_fcn_out, alpha, alpha0, alphamax, inner_cnt
 
-#def compute_sntd_mu(tensor_in, ranks, l2weights, l1weights, core_in, factors_in, n_iter_max=100, tol=1e-6,
-           #fixed_modes = [], normalize = [], beta = 2, mode_core_norm=None,
-           #verbose=False, return_costs=False, deterministic=False):
+def one_sntd_step_mu(tensor, l2weights=0, l1weights=0, core=0, factors=0, beta=2,
+                   fixed_modes=[], epsilon=1e-12, cost_fct_vals=0, iter_inner=50, acc_delta=0.5, opt_rescale=True):
+    
+    ndims = tl.ndim(tensor)
 
-    ## initialisation - store the input varaibles
-    #core = core_in.copy()
-    #factors = factors_in.copy()
-    #tensor = tensor_in
+    # Store the value of the objective (loss) function at the current
+    # iterate (factors_y, core_n).
+    cost0_fct_vals= cost_fct_vals[-1]
 
-    #norm_tensor = tl.norm(tensor, 2)
+    # Storing the inner iterations count
+    inner_cnt = []
 
-    ## initialisation - declare local varaibles
-    #cost_fct_vals = []
-    #tic = time.time()
-    #toc = []
-    #epsilon = 1e-12
-    ## initialisation - unfold the tensor according to the modes
-    ##unfolded_tensors = []
-    ##for mode in range(tl.ndim(tensor)):
-    ##   unfolded_tensors.append(tl.base.unfold(tensor, mode))
+    # Generating the mode update sequence
+    modes_list = [mode for mode in range(ndims) if mode not in fixed_modes]
 
-    ## Iterate over one step of NTD
-    #for iteration in range(n_iter_max):
-        ## One pass of least squares on each updated mode
-        #core, factors, cost = one_sntd_step_mu(tensor, ranks, l2weights, core, factors, beta, norm_tensor,
-                                              #fixed_modes, normalize, mode_core_norm,epsilon)
+    # Compute the extrapolated update for the factors.
+    # Note that when alpha is zero, factors_y = factors.
+    for mode in modes_list:
+        factors[mode], cnt = mu.mu_betadivmin(factors[mode], tl.unfold(tl.tenalg.multi_mode_dot(core, factors, skip = mode), mode),
+            tl.unfold(tensor,mode), beta, l2weight=l2weights[mode], l1weight=l1weights[mode], epsilon=epsilon, iter_inner=iter_inner,
+            acc_delta=acc_delta)
+        
+        # Optimal Rescaling
+        if opt_rescale:
+            regs = [l1weights[i]*np.sum(np.abs(factors[i])) + 1/2*l2weights[i]*np.linalg.norm(factors[i])**2 for i in range(ndims)]
+            regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
+            hom_deg = [1.0*(l1weights[i]>0) + 2.0*(l2weights[i]>0) for i in range(ndims+1)] # +1 for the core
+            scales = opt_scaling(np.array(regs),np.array(hom_deg))
+            for submode in range(ndims):
+                factors[submode] = factors[submode]*scales[submode]
+            core = core*scales[-1]
 
-        ## Store the computation time
-        #toc.append(time.time() - tic)
+        inner_cnt.append(cnt)
+    core, cnt = mu.mu_tensorial(core, factors, tensor, beta, l2weight=l2weights[-1], l1weight=l1weights[-1],
+                                 epsilon=epsilon, iter_inner=iter_inner, acc_delta=acc_delta)
 
-        #cost_fct_vals.append(cost)
+    # Optimal Rescaling
+    if opt_rescale:
+        regs = [l1weights[i]*np.sum(np.abs(factors[i])) + 1/2*l2weights[i]*np.linalg.norm(factors[i])**2 for i in range(ndims)]
+        regs += [l1weights[-1]*np.sum(np.abs(core)) + 1/2*l2weights[-1]*tl.norm(core)**2] 
+        hom_deg = [1.0*(l1weights[i]>0) + 2.0*(l2weights[i]>0) for i in range(ndims+1)] # +1 for the core
+        scales = opt_scaling(np.array(regs),np.array(hom_deg))
+        for submode in range(ndims):
+            factors[submode] = factors[submode]*scales[submode]
+        core = core*scales[-1]
+    inner_cnt.append(cnt)
 
-        #if verbose:
-            #if iteration == 0:
-                #print('Initial Obj={}'.format(cost))
-            #else:
-                #if cost_fct_vals[-2] - cost_fct_vals[-1] > 0:
-                    #print('Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
-                            #cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol))
-                #else:
-                    ## print in red when the reconstruction error is negative (shouldn't happen)
-                    #print('\033[91m' + 'Iter={}|Obj={}| Var={} (target is {}).'.format(iteration,
-                            #cost_fct_vals[-1], (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])),tol) + '\033[0m')
+    # Compute the value of the objective (loss) function
+    cost_fcn = beta_div.beta_divergence(tensor, tl.tenalg.multi_mode_dot(core, factors), beta)+ 1/2*l2weights[-1]*tl.norm(core)**2 + l1weights[-1]*tl.sum(core)
+    regs_facs = [l1weights[i]*np.sum(np.abs(factors[i])) + 1/2*l2weights[i]*np.linalg.norm(factors[i])**2 for i in range(ndims)]
+    cost_fcn += np.sum(regs_facs)
 
-        #if iteration > 0 and (abs(cost_fct_vals[-2] - cost_fct_vals[-1])/abs(cost_fct_vals[-2])) < tol:
-            ## Stop condition: relative error between last two iterations < tol
-            #if verbose:
-                #print('Converged to the required tolerance in {} iterations.'.format(iteration))
-            #break
-
-    #if return_costs:
-        #return core, factors, cost_fct_vals, toc
-    #else:
-        #return core, factors
-
-#def one_sntd_step_mu(tensor, ranks, l2weights, in_core, in_factors, beta, norm_tensor,
-                   #fixed_modes, normalize, mode_core_norm, epsilon):
-    ## Copy
-    #core = in_core.copy()
-    #factors = in_factors.copy()
-
-    ## Generating the mode update sequence
-    #modes_list = [mode for mode in range(tl.ndim(tensor)) if mode not in fixed_modes]
-
-    #for mode in modes_list:
-        #factors[mode] = mu.mu_betadivmin(factors[mode], tl.unfold(tl.tenalg.multi_mode_dot(core, factors, skip = mode), mode), tl.unfold(tensor,mode), beta, l2weights[mode+1])
-
-    #core = mu.mu_tensorial(core, factors, tensor, beta, l2weights[0])
-
-    #if normalize[-1]:
-        #unfolded_core = tl.unfold(core, mode_core_norm)
-        #for idx_mat in range(unfolded_core.shape[0]):
-            #if tl.norm(unfolded_core[idx_mat]) != 0:
-                #unfolded_core[idx_mat] = unfolded_core[idx_mat] / tl.norm(unfolded_core[idx_mat], 2)
-        #core = tl.fold(unfolded_core, mode_core_norm, core.shape)
-
-
-    #reconstructed_tensor = tl.tenalg.multi_mode_dot(core, factors)
-
-    #cost_fct_val = beta_div.beta_divergence(tensor, reconstructed_tensor, beta)+l2weights[0]*tl.norm(core, order=1)
-    #for mode in modes_list:
-        #cost_fct_val = cost_fct_val+1/2*l2weights[mode+1]*np.linalg.norm(factors[mode],'fro')**2
-
-    #return core, factors, cost_fct_val #  exhaustive_rec_error
-
-
-
-
-
-
-
-
+    return core, factors, cost_fcn, inner_cnt
