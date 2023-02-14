@@ -2,6 +2,7 @@
 import sys
 import scipy as sp
 import scipy.linalg as splin
+import numpy as np
 
 
 #############################################
@@ -138,7 +139,8 @@ def vca(Y,R,verbose = True,snr_input = 0):
   A[-1,0] = 1
 
   for i in range(R):
-    w = sp.random.rand(R,1);   
+    # w = sp.random.rand(R,1)
+    w = np.random.rand(R,1)
     f = w - sp.dot(A,sp.dot(splin.pinv(A),w))
     f = f / splin.norm(f)
       
