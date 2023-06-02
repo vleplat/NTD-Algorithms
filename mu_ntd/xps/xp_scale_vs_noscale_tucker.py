@@ -59,17 +59,16 @@ variables={
     "unbalanced_tensor": False,
     "verbose_run": True,
     }
-name_store = "xp_scale_tucker_kl"
+name_store = "xp_scale_tucker_Fro_tensorly"
 
 @run_and_track(algorithm_names=["l1l2 MU"], path_store="./Results/",name_store=name_store, add_track={"nbseed": nb_seeds}, verbose=True, skip=skip, **variables)
 def script_run(**cfg):
-    match cfg["xp"]:
-        case "sparse":
-            l1weights = 4*[cfg["weight"]]
-            l2weights = 4*[0]#cfg["weight"]]
-        case "lra": #TODO fix sinkhorn??
-            l1weights = 4*[0]#cfg["weight"]]
-            l2weights = 4*[cfg["weight"]]
+    if cfg["xp"]=="sparse":
+        l1weights = 4*[cfg["weight"]]
+        l2weights = 4*[0]#cfg["weight"]]
+    elif cfg["xp"]=="lra": #TODO fix sinkhorn??
+        l1weights = 4*[0]#cfg["weight"]]
+        l2weights = 4*[cfg["weight"]]
     # XP sparse core
     #l2weights = 4*[cfg["weight"]]
     #l1weights = 4*[0]
@@ -122,20 +121,19 @@ def script_run(**cfg):
 
 
     # ### Beta = 1 - MU no extrapolation no acceleration
-    match cfg["loss"]:
-        case "kl":
-            core, factors, cost_fct_vals, toc, alpha, inner_cnt, sparsity = SNTD.sntd_mu(T, cfg["ranks"], l2weights=l2weights, l1weights=l1weights, init = "custom", core_0 = tensor_init[0], factors_0 = tensor_init[1], n_iter_max = cfg["n_iter_max"], tol=cfg["tol"], beta = cfg["beta"],
-                                                    fixed_modes = [], verbose = cfg["verbose_run"], return_costs = True, extrapolate=False, iter_inner=cfg["iter_inner"], accelerate=cfg["accelerate"], opt_rescale=cfg["scale"], epsilon=cfg["epsilon"])
+    if cfg["loss"]=="kl":
+        core, factors, cost_fct_vals, toc, alpha, inner_cnt, sparsity = SNTD.sntd_mu(T, cfg["ranks"], l2weights=l2weights, l1weights=l1weights, init = "custom", core_0 = tensor_init[0], factors_0 = tensor_init[1], n_iter_max = cfg["n_iter_max"], tol=cfg["tol"], beta = cfg["beta"],
+                                                fixed_modes = [], verbose = cfg["verbose_run"], return_costs = True, extrapolate=False, iter_inner=cfg["iter_inner"], accelerate=cfg["accelerate"], opt_rescale=cfg["scale"], epsilon=cfg["epsilon"])
     
-        case "frobenius":
-            out_tucker, cost_fct_vals = non_negative_tucker_hals(T, cfg["ranks"], n_iter_max=cfg["n_iter_max"], init=tensor_init, tol=cfg["tol"],sparsity_coefficients=l1weights, ridge_coefficients=l2weights, verbose=cfg["verbose_run"], normalize_factors=False, return_errors=True, exact=False,    algorithm="fista", inner_iter_max = cfg["iter_inner"], #todo implement, or have some option dictionary?
-            epsilon = cfg["epsilon"], rescale=cfg["scale"], print_it=10)
-            core = out_tucker[0]
-            factors = out_tucker[1]
-            # TODO REQ TIME, callback implem
-            # TODO REQ SPARSITY
-            toc = [i for i in range(len(cost_fct_vals))] # its for now
-            #sparsity = [[0]]
+    elif cfg["loss"]=="frobenius":
+        out_tucker, cost_fct_vals = non_negative_tucker_hals(T, cfg["ranks"], n_iter_max=cfg["n_iter_max"], init=tensor_init, tol=cfg["tol"],sparsity_coefficients=l1weights, ridge_coefficients=l2weights, verbose=cfg["verbose_run"], normalize_factors=False, return_errors=True, exact=False,    algorithm="fista", inner_iter_max = cfg["iter_inner"], #todo implement, or have some option dictionary?
+        epsilon = cfg["epsilon"], rescale=cfg["scale"], print_it=10)
+        core = out_tucker[0]
+        factors = out_tucker[1]
+        # TODO REQ TIME, callback implem
+        # TODO REQ SPARSITY
+        toc = [i for i in range(len(cost_fct_vals))] # its for now
+        #sparsity = [[0]]
 
     #true_sparsity = tl.sum(core_0>0)/tl.prod(cfg["ranks_est"])
     #print(f"true sparsity {true_sparsity}")

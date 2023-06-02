@@ -426,15 +426,14 @@ def one_sntd_step_mu(tensor, l2weights=0, l1weights=0, core=0, factors=0, beta=2
         core[core<=epsilon]=0
 
         # Step 2: compute regs, and rescale
-        match opt_rescale:
-            case "sinkhorn":
-                regs = [l1weights[i]*np.sum(np.abs(factors[i]),axis=0) + l2weights[i]*np.sum(factors[i]**2, axis=0) for i in range(ndims)]
-                factors, core = tucker_implicit_sinkhorn_balancing(factors, core, regs, l1weights[-1]+l2weights[-1], hom_deg, itermax=1)
-            case "scalar":
-                # handle epsilon with: 1/ get mask of 0 2/ scale 3/ reapply epsilon on the mask (should be no 0 factors/core so no full 0 regs)
-                regs = [l1weights[i]*np.sum(np.abs(factors[i])) + l2weights[i]*np.sum(factors[i]**2) for i in range(ndims)]
-                regs += [l1weights[-1]*np.sum(np.abs(core)) + l2weights[-1]*tl.norm(core)**2] 
-                factors, core, scales = tucker_implicit_scalar_balancing(factors, core, regs, hom_deg)
+        if opt_rescale=="sinkhorn":
+            regs = [l1weights[i]*np.sum(np.abs(factors[i]),axis=0) + l2weights[i]*np.sum(factors[i]**2, axis=0) for i in range(ndims)]
+            factors, core = tucker_implicit_sinkhorn_balancing(factors, core, regs, l1weights[-1]+l2weights[-1], hom_deg, itermax=1)
+        elif opt_rescale=="scalar":
+            # handle epsilon with: 1/ get mask of 0 2/ scale 3/ reapply epsilon on the mask (should be no 0 factors/core so no full 0 regs)
+            regs = [l1weights[i]*np.sum(np.abs(factors[i])) + l2weights[i]*np.sum(factors[i]**2) for i in range(ndims)]
+            regs += [l1weights[-1]*np.sum(np.abs(core)) + l2weights[-1]*tl.norm(core)**2] 
+            factors, core, scales = tucker_implicit_scalar_balancing(factors, core, regs, hom_deg)
  
         # Step 3: impute epsilon in place of values in [0, epsilon]
         for i in range(ndims):
