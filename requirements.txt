@@ -1,5 +1,6 @@
 numpy
 tensorly
+tlviz
 plotly
 kaleido
 ipython
@@ -8,8 +9,9 @@ matplotlib
 pandas
 tqdm
 nbformat
+shootout-opt
+black
 -e .
 
-# Also manually go there and install the following:
-# shootout_folder/.
-# nn_fac_folder/.
+# Also manually install custom tensorly branch
+# TODO

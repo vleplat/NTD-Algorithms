@@ -9,7 +9,7 @@ Created on 2022
 import numpy as np
 import time
 import tensorly as tl
-import nn_fac.errors as err
+#import nn_fac.errors as err
 import itertools as it
 
 def gamma(beta):
@@ -33,7 +33,7 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
     M is m by n, U is m by r, V is r by n.
     All matrices are nonnegative componentwise.
     We are interested in reducing the loss:
-            f(U >= 0) = beta_div(M, UV)+1/2 \mu \|U\|_F^2 + 1/2 \lambda \|V\|_1
+            f(U >= 0) = beta_div(M, UV)+ \mu \|U\|_F^2 + \lambda \|V\|_1
     The update rule of this algorithm is inspired by [3].
 
     Parameters
@@ -82,11 +82,12 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
 
     # Checks
     if beta < 0:
-        raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
+        #raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
+        print("Invalid value for beta: negative one.") #TODO improve
 
     # Precomputations, outside inner loop
     if beta==0:
-        a_tilde = l2weight
+        a_tilde = 2*l2weight
         c_tilde = 0
         n_mode = 2
         size_mat = U.shape
@@ -138,14 +139,14 @@ def mu_betadivmin(U, V, M, beta, l2weight=0, l1weight=0, epsilon=1e-12, iter_inn
                 #e = np.ones(np.shape(M))
                 #C = np.dot(e,V.T)
                 K_inverted = K**(-1)
-                S = 4*l2weight*U*np.dot((K_inverted*M),V.T)
-                denom = 2*l2weight
+                S = 4*2*l2weight*U*np.dot((K_inverted*M),V.T)
+                denom = 2*2*l2weight
                 deltaU = ((C**2 + S)**(1/2)-C) / denom - U # not so useful here, but uniform syntax
         # TODO: implement beta=2 with l2 --> beta=2 should never be used anyway
         elif beta == 2:
             #deltaU = U * ((MVt / (U@VVt + l1weight))-1)
             # TODO Confirm with Valentin
-            deltaU = U * (((MVt - l1weight) / (U@VVt + l2weight*U))-1)
+            deltaU = U * (((MVt - l1weight) / (U@VVt + 2*l2weight*U))-1)
         elif beta == 3:
             K = np.dot(U,V)
             denom = np.dot(K**2,V.T) + l1weight
@@ -223,14 +224,15 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
 
     # Checks
     if beta < 0:
-        raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
+        #raise err.InvalidArgumentValue("Invalid value for beta: negative one.") from None
+        print("Invalid value for beta: negative one.")
 
     #if not l2weight and not l1weight:
     #    raise err.InvalidArgumentValue("l1 and l2 coefficients may not be nonzero simultaneously for one mode")
 
     # Precomputations, outside inner loop
     if beta==0:
-        a_tilde = l2weight
+        a_tilde = 2*l2weight
         c_tilde = 0
         n_mode = len(G.shape)
         size_tens = G.shape
@@ -274,15 +276,15 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
             else:
                 K = tl.tenalg.multi_mode_dot(G,factors)
                 L2 = K**(-1) * tensor
-                S = 4*l2weight*G*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
-                denom = 2*l2weight
+                S = 4*2*l2weight*G*tl.tenalg.multi_mode_dot(L2, [fac.T for fac in factors])
+                denom = 2*2*l2weight
                 deltaG = ((C**2 + S)**(1/2)-C) / denom - G 
  
         elif beta == 2:
             K = tl.tenalg.multi_mode_dot(G,factors)
             #deltaG = G * ((MVt  / (l1weight + tl.tenalg.multi_mode_dot(G, VVt))) - 1)
             # TODO confirm with Valentin
-            deltaG = G * (((MVt - l1weight)  / (l2weight*G + tl.tenalg.multi_mode_dot(G, VVt))) - 1)
+            deltaG = G * (((MVt - l1weight)  / (2*l2weight*G + tl.tenalg.multi_mode_dot(G, VVt))) - 1)
 
         elif beta == 3:
             K = tl.tenalg.multi_mode_dot(G,factors)

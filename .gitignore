@@ -14,3 +14,10 @@ venv/*
 
 # python
 *.pyc
+nn_fac_folder/nn_fac/__pycache__/nnls.cpython-310.pyc
+nn_fac_folder/nn_fac/__pycache__/ntd.cpython-310.pyc
+
+# vscode
+.vscode/*
+workspace*
+todo.md
