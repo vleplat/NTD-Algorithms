@@ -35,13 +35,15 @@ if not nb_seeds:
     skip = True
 
 # Import Configuration
-file = open("./config/cp_Fro.json")
-name_store = "xp_scale_cp_Fro_tensorly" #todo rerun
-#file = open("./config/cp_KL.json")
-#name_store = "xp_scale_cp_KL"
+file = open("./config/nmf_Fro.json")
+name_store = "xp_scale_nmf_Fro_dummy"
+#file = open("./config/nmf_KL.json")
+#name_store = "xp_scale_nmf_kl" #todo rerun
 
-variables = json.load(file) 
-variables["seed"]= [np.random.randint(1e5) for i in range(nb_seeds)]
+variables = json.load(file)
+variables["weight"] = 0.01
+variables["xp"]="lra"
+variables["seed"] = [np.random.randint(1e5) for i in range(nb_seeds)]
 variables["seed_init"]= [np.random.randint(1e5) for i in range(nb_seeds_init)]
 
 @run_and_track(
@@ -56,11 +58,11 @@ variables["seed_init"]= [np.random.randint(1e5) for i in range(nb_seeds_init)]
 def script_run(**cfg):
     # XP l1 + l2s or l2 everywhere
     if cfg["xp"] == "sparse":
-        l2weights = [0, cfg["weight"] / 2, cfg["weight"] / 2]  # cfg["weight"]]
-        l1weights = [cfg["weight"], 0, 0]
+        l2weights = [0, cfg["weight"] / 2]  # cfg["weight"]]
+        l1weights = [cfg["weight"], 0]
     elif cfg["xp"] == "lra":
-        l2weights = 3 * [cfg["weight"]]
-        l1weights = 3 * [0]  # cfg["weight"]]
+        l2weights = 2 * [cfg["weight"]]
+        l1weights = 2 * [0]  # cfg["weight"]]
 
     # Seeding
     rng = np.random.RandomState(cfg["seed"] + hash("sNTD") % (2**32))
@@ -69,20 +71,19 @@ def script_run(**cfg):
     # deflation of components on U, V, W
     factors_0.append(rng.rand(cfg["U_line"], cfg["rank"]))
     factors_0.append(rng.rand(cfg["V_line"], cfg["rank"]))
-    factors_0.append(rng.rand(cfg["W_line"], cfg["rank"]))
-    if cfg["xp"] == "sparse":
-        factors_0 = [sparsify(fac, 0.3) for fac in factors_0]
+    #if cfg["xp"] == "sparse":
+    factors_0 = [sparsify(fac, 0.3) for fac in factors_0]
     # putting some weights
     if cfg["unbalanced_tensor"]:
         factors_0 = [
             factors_0[l] * np.array([10**i for i in range(cfg["rank"])])
-            for l in range(3)
+            for l in range(2)
         ]
     # generate noise according to input SNR
     cp_true = tl.cp_tensor.CPTensor((None, factors_0))  # CP tensor
     cp_true.normalize()
     Ttrue = cp_true.to_tensor()
-    N = rng.rand(cfg["U_line"], cfg["V_line"], cfg["W_line"])  # 1e-2
+    N = rng.rand(cfg["U_line"], cfg["V_line"])  # 1e-2
     sigma = 10 ** (-cfg["SNR"] / 20) * np.linalg.norm(Ttrue) / np.linalg.norm(N)
     T = Ttrue + sigma * N
 
@@ -91,7 +92,6 @@ def script_run(**cfg):
     factors_init = []
     factors_init.append(rng2.rand(cfg["U_line"], cfg["rank_est"]))
     factors_init.append(rng2.rand(cfg["V_line"], cfg["rank_est"]))
-    factors_init.append(rng2.rand(cfg["W_line"], cfg["rank_est"]))
     tensor_init = tl.cp_tensor.CPTensor((None, factors_init))
 
     # Initialization scaling --> breaks code ... TODO fix?
@@ -102,9 +102,17 @@ def script_run(**cfg):
         print(f"Initialization rescaled: {rescale}")
 
     # callback
-    TOC_CP = []
-    def time_tracer(cp_tensor,error):
-        TOC_CP.append(time.perf_counter())
+    TOC_NMF = []
+    SCALES_W_NMF = []
+    SCALES_H_NMF = []
+    def time_tracer_nmf(cpdata,error):
+        if cfg["xp"]=="sparse":
+            SCALES_W_NMF.append(np.sum(cpdata[1][0][:,0]))
+            SCALES_H_NMF.append(tl.norm(cpdata[1][1][:,0])**2) #1/2 from weight
+        elif cfg["xp"]=="lra":
+            SCALES_W_NMF.append(tl.norm(cpdata[1][0][:,0])**2)
+            SCALES_H_NMF.append(tl.norm(cpdata[1][1][:,0])**2)
+        TOC_NMF.append(time.perf_counter())
 
     # Call of solvers
     # ### Beta = 1 - MU no extrapolation no acceleration
@@ -146,31 +154,38 @@ def script_run(**cfg):
             epsilon=cfg["epsilon"],
             rescale=cfg["scale"],
             print_it=10,
-            callback=time_tracer
+            callback=time_tracer_nmf
         )
         # TODO REQ TIME, callback implem
-        toc = [TOC_CP[i]-TOC_CP[0] for i in range(1,len(TOC_CP))]#[i for i in range(len(cost_fct_vals))]  # its for now
+        toc = [TOC_NMF[i]-TOC_NMF[0] for i in range(1,len(TOC_NMF))]#[i for i in range(len(cost_fct_vals))]  # its for now
         # sparsity = [[0]]
 
     # Post-processing errors/FMS
-    fms_score = fms(out_cp, cp_true)
     # First factor sparsity
     tol = 2 * cfg["epsilon"]
     spfac = tl.sum(out_cp[1][0] > tol)/(cfg["U_line"]*cfg["rank_est"])
     spfac_true = tl.sum(cp_true[1][0] > tol)/(cfg["U_line"]*cfg["rank_est"])
+    # fms
+    fms_score = fms(out_cp, cp_true)
 
-    
+    # Tracking low-rank things
     out_cp.normalize()
     print(out_cp[0])
+    Xhat = out_cp.to_tensor()
+    _,s,_ = np.linalg.svd(Xhat)
+    print(s[:6])
+    print(out_cp[1][0].T@out_cp[1][0])
+    print(out_cp[1][1].T@out_cp[1][1])
 
-    # return {"errors": cost_fct_vals, "timings": toc, "sparsity_core": sparsity[-1], "error_final": cost_fct_vals[-1], "sparsity_final": sparsity[-1][-1],"target_sparsity": true_sparsity, "fms":fms_score}
     return {
         "errors": cost_fct_vals,
         "timings": toc,
         "error_final": cost_fct_vals[-1],
         "fms": fms_score,
         "sparsity": spfac,
-        "true_sparsity": spfac_true,
+        "true_sparsity":spfac_true,
+        "scale_W": SCALES_W_NMF[1:], # discarding init value
+        "scale_H": SCALES_H_NMF[1:],
         "weights": out_cp[0], # to scout for pruned components
     }
 
@@ -188,16 +203,16 @@ ovars = list(variables.keys())
 df_conv_it = pp.df_to_convergence_df(
     df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
 )
-df_conv_time = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars
-)  # , err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
-# df_conv_sparse = pp.df_to_convergence_df(df, err_name="sparsity_core", other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
+
+# TODO: allow two differents errors
+#df_conv_scales = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars, err_name="scale_W", time_name="it", max_time=np.Inf)
 
 # Making plots
 fig = px.line(
     df_conv_it,
-    x="it",
-    #x="timings",
+    #x="it",
+    x="timings",
     y="errors",
     color="scale",
     facet_col="weight",
