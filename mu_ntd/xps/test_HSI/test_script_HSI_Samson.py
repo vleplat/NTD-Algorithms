@@ -111,7 +111,7 @@ n_iter_max = 750
 beta = 1
 iter_inner = 3
 l2weight = [0, 0, 0, 0]     #(\mu_W, \mu_H, \mu_Q, \mu_g)
-l1weight = [1, 20, 20, 1]      #(\mu_W, \mu_H, \mu_Q, \mu_g), recommanded: l1weight = [1, 20, 20, 1] for MU + reblancing and l1weight = [1, 2, 2, 1] for MU+HER+no rebalancing
+l1weight = [1, 10, 10, 1]      #(\mu_W, \mu_H, \mu_Q, \mu_g), recommanded: l1weight = [1, 10, 10, 1] for MU + reblancing and l1weight = [1, 2, 2, 1] for MU+HER+no rebalancing
 # Other successful combinations: l2weight = [0, 20, 20, 0] and l1weight = [5, 0, 0, 5]
 verbose=False
 tol = 0 #running all iterations
@@ -131,7 +131,7 @@ core_init = np.random.rand(ranks[0], ranks[1], ranks[2])
 
 # Beta = 1 - MU no extrapolation no acceleration
 core, factors, cost_fct_vals, toc, alpha, inner_cnt, sparsity = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
-                                                fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=False)
+                                                fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=False, iter_inner=iter_inner, accelerate=True, opt_rescale="sinkhorn")
 # Beta = 1 - MU extrapolation and acceleration
 # core_HER, factors_HER, cost_fct_vals_HER, toc_HER, alpha_HER, inner_cnt_HER, sparsity_HER = SNTD.sntd_mu(T, ranks, l2weights=l2weight, l1weights=l1weight, init = "custom", core_0 = core_init, factors_0 = factors_init, n_iter_max = n_iter_max, tol=tol, beta = beta,
                                                 # fixed_modes = [], verbose = verbose, return_costs = True, extrapolate=True, iter_inner=iter_inner, accelerate=True, opt_rescale=False)
