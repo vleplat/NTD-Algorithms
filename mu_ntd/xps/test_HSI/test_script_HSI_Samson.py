@@ -108,11 +108,10 @@ ranks = [52,52,3]
 
 # Solver parameters
 n_iter_max = 750
-beta = 1
+beta = 0
 iter_inner = 3
 l2weight = [0, 0, 0, 0]     #(\mu_W, \mu_H, \mu_Q, \mu_g)
-l1weight = [1, 10, 10, 1]      #(\mu_W, \mu_H, \mu_Q, \mu_g), recommanded: l1weight = [1, 10, 10, 1] for MU + reblancing and l1weight = [1, 2, 2, 1] for MU+HER+no rebalancing
-# Other successful combinations: l2weight = [0, 20, 20, 0] and l1weight = [5, 0, 0, 5]
+l1weight = [1, 50, 50, 20]     #(\mu_W, \mu_H, \mu_Q, \mu_g), recommanded: l1weight = [1, 10, 10, 1] for MU beta=1 + reblancing and l1weight = [1, 50, 50, 20] for MU beta=0 + reblancing
 verbose=False
 tol = 0 #running all iterations
 
