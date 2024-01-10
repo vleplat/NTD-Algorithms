@@ -1,0 +1,23 @@
+{    
+    "weight" : [1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1.0],
+    "scale": ["sinkhorn", "scalar", false],
+    "xp" :  ["lra",  "sparse"],
+    "loss": "frobenius",
+    "U_line" : 30,
+    "V_line" : 30,
+    "W_line" : 30,
+    "ranks" : [[4,4,4]],
+    "ranks_est": [[6,4,4]],
+    "SNR" : 200,
+    "tol" : 0,
+    "n_iter_max" : 300,
+    "epsilon": 1e-16,
+    "beta" : 1,
+    "iter_inner" : 30,
+    "sparse_factors" : true,
+    "sparse_core" : true,
+    "accelerate" : false,
+    "init_scale" : true,
+    "unbalanced_tensor": false,
+    "verbose_run": true
+}

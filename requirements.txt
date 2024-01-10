@@ -11,7 +11,8 @@ tqdm
 nbformat
 shootout-opt
 black
+barmusiccomp # TODO make optional
 -e .
 
 # Also manually install custom tensorly branch
-# TODO
+# TODO improve

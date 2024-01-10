@@ -1,0 +1,21 @@
+{
+    "weight": [0, 1e-4, 5e-2, 1e-1, 2e-1, 5e-1, 1],
+    "scale": ["init_only",true, false],
+    "xp": ["sparse", "indiv_sparse"],
+    "U_line": 30,
+    "V_line": 30,
+    "rank": [4],
+    "rank_est": [4],
+    "loss": "kl",
+    "SNR": 200,
+    "tol": 0,
+    "init_tilt": 100,
+    "sparsify_coeff": 0.9,
+    "n_iter_max": 100,
+    "epsilon": 1e-16,
+    "beta": 1,
+    "iter_inner": 10,
+    "accelerate": false,
+    "init_scale": true,
+    "verbose_run": true
+}

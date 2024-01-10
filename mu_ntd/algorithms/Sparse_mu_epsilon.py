@@ -220,7 +220,6 @@ def mu_tensorial(G, factors, tensor, beta, l2weight=0, l1weight=0, epsilon=1e-12
 
     # acceleration init
     res = 1
-    res0 = 0
 
     # Checks
     if beta < 0:

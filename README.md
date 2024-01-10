@@ -1,16 +1,16 @@
-# NTD-Algorithms
-This project concerns the development of a full framework to derive efficient algorithms to compute a Nonnegative Tucker Decomposition (NTD) of a given
-input nonnegative Tensor ![\Large \mathcal{X}\in](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{X}\in) 
+# Regularized scale-invariant low-rank approximation problems
+This project concerns the development of a full framework to derive efficient algorithms to compute a regularized low-rank approximation of a given
+input (nonnegative) matrix or tensor ![\Large \mathcal{X}\in](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{X}\in) 
 ![\large \mathbb{R}_+^{I_1\times...I_N}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times...I_N}).
-In the particular case of a three-way tensor of dimension ![\small I_1](https://latex.codecogs.com/svg.latex?\small&space;I_1) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_2](https://latex.codecogs.com/svg.latex?\small&space;I_2) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_3](https://latex.codecogs.com/svg.latex?\small&space;I_3)
-computing a NTD corresponds to look for three nonnegative factors 
+In the particular case of a three-way tensor of dimension ![\small I_1](https://latex.codecogs.com/svg.latex?\small&space;I_1) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_2](https://latex.codecogs.com/svg.latex?\small&space;I_2) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small I_3](https://latex.codecogs.com/svg.latex?\small&space;I_3), we might for instance 
+compute a sparse NTD, which corresponds to looking for three nonnegative factors 
 ![\Large W\in](https://latex.codecogs.com/svg.latex?\Large&space;W\in) 
 ![\large \mathbb{R}_+^{I_1\times.J}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times.J}),
 ![\Large H\in](https://latex.codecogs.com/svg.latex?\Large&space;H\in) 
 ![\large \mathbb{R}_+^{I_2\times.K}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_2\times.K}),
 ![\Large Q\in](https://latex.codecogs.com/svg.latex?\Large&space;Q\in) 
 ![\large \mathbb{R}_+^{I_3\times.L}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_3\times.L}),
-and a nonnegative core tensor 
+and a sparse nonnegative core tensor 
 ![\Large \mathcal{G}](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{G}) of dimension ![\small J](https://latex.codecogs.com/svg.latex?\small&space;J) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small K](https://latex.codecogs.com/svg.latex?\small&space;K) ![\small \times](https://latex.codecogs.com/svg.latex?\small&space;\times) ![\small L](https://latex.codecogs.com/svg.latex?\small&space;L)
 with 
 ![\large \text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right)](https://latex.codecogs.com/svg.latex?\large&space;\text{max}\left(J,K,L\right)\ll\text{min}\left(I_1,I_2,I_3\right))
@@ -19,10 +19,9 @@ such that
 
 where ![\Large \times_i](https://latex.codecogs.com/svg.latex?\Large&space;\times_i) denotes the i-mode product.
 
-We will focus on the integration of:
-  - various metrics for the cost/objective function used to assess the quality of the NTD (data fitting term)
-  - constraints such as normalization
-  - penalty functions in the objective to promote specific solutions such as sparsity
-  - acceleration schemes
+This repository contains only code tailored for KL loss, the rest of the code (l2 loss) is in a branch of tensorly. Our implementation integrates
+  - various metrics for the cost/objective function used to assess the quality of the approximation (data fitting term)
+  - homogeneous regularizations to promote specific solutions such as sparsity.
+  - nonnegativity is optional.
   
 

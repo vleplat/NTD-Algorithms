@@ -15,19 +15,14 @@ from tensorly.decomposition import tucker as tl_tucker
 
 from tensorly.solvers.penalizations import (
     process_regularization_weights,
-    cp_opt_balance,
-    tucker_implicit_sinkhorn_balancing,
-    tucker_implicit_scalar_balancing,
+    cp_opt_balance
 )
 import mu_ntd.algorithms.Sparse_mu_epsilon as mu
 from mu_ntd.algorithms.utils import beta_divergence as beta_div
 
-import numpy as np
-
-
 
 ######################### Temporary, to test mu and not break everything
-def sncp_mu(tensor, rank, l2weights=None, l1weights=None, init = "random", factors_0 = [], n_iter_max=100, tol=1e-6,
+def sncp_mu(tensor, rank, l2weights=None, l1weights=None, init = "random", factors_0 = [], n_iter_max=100,
            fixed_modes = [], beta = 2, accelerate=True,
            verbose=False, return_costs=False, epsilon=1e-12, iter_inner=20, opt_rescale=False, print_it=10):
     """
@@ -161,7 +156,6 @@ def sncp_mu(tensor, rank, l2weights=None, l1weights=None, init = "random", facto
     (
         l2weights,
         l1weights,
-        reg_is_used, #for error computation, not so important
         disable_rebalance,
         hom_deg,
     ) = process_regularization_weights(
