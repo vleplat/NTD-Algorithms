@@ -25,3 +25,10 @@ This repository contains only code tailored for KL loss, the rest of the code (l
   - nonnegativity is optional.
   
 
+## Installation
+
+Installation of this package is tricky because of a dependency on a specific branch of a fork of tensorly. We will start by installing this. Visit this repository: [link](https://github.com/cohenjer/tensorly/tree/HRSI_draft), clone it and perform a local installation with `pip install -e .`.
+
+Now we can install the rest of the dependencies. Clone the current repository, and run `pip install -r requirements.txt`. You should be good to go.
+
+
