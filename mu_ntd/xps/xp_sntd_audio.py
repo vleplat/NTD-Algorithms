@@ -6,9 +6,14 @@ import pandas as pd
 from mu_ntd.xps.audio_scripts.utils import frontiers_from_time_to_bar
 from mu_ntd.xps.audio_scripts.utils import get_segmentation_from_txt
 import mu_ntd.algorithms.Sparse_ntd as SNTD
+import plotly.io as pio
+import template_plot
+pio.templates.default= "plotly_white+my_template"
+#pio.kaleido.scope.mathjax = None  # stupid bug
+
 # Command line input
 # nb_seeds =
-skip = 0
+skip = 1
 
 # The point here would be to compare extracted Q matrices with and without sparsity.
 # We can toy with the 3d dimension to show sparsity helps fixing that dim.
@@ -144,6 +149,8 @@ for fac in faclist:
     Qlist.append(Qt)
 Qt3d = np.stack(Qlist, axis=2)
 fig3 = px.imshow(Qt3d, facet_col=2, facet_col_wrap=3, aspect="auto", color_continuous_scale="Greys", facet_row_spacing=0.1)#, width=800, height=600) # titles how ?
+# for speed debug
+#frontiers_baridx = frontiers_baridx[:3]
 for front in frontiers_baridx:
     # Extremely slow
     print("Slowly adding bar line in plotly imshows at index ",front)
@@ -154,6 +161,28 @@ for i, title in enumerate(titles):
     # 3 conditions
     fig3.layout.annotations[title_idx3(i,len(Qlist))]['text'] = title
 
+fig.update_layout(
+    yaxis1=dict(title_text="Loss"),
+    xaxis1=dict(title_text=""),
+    xaxis2=dict(title_text=""),
+    xaxis3=dict(title_text="iteration index"),
+    xaxis4=dict(title_text=""),
+    xaxis5=dict(title_text=""),
+    legend=dict(title_text="balancing")
+)
+fig3.update_yaxes(
+    showticklabels=False
+)
+fig3.update_layout(
+    xaxis2=dict(title_text="Bar index"),
+    yaxis7=dict(title_text="Pattern index")
+)
+fig.for_each_annotation(lambda a: a.update(text=a.text.replace("weight", "reg")))
+fig3.for_each_annotation(lambda a: a.update(text=a.text.replace("weight", "reg")))
+
 fig.show()
 #fig2.show()
 fig3.show()
+
+fig.write_image("Results/xp_audio"+"-"+variables["song"]+"_loss.pdf")
+fig3.write_image("Results/xp_audio"+"-"+variables["song"]+"_Q.pdf")

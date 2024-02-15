@@ -13,7 +13,8 @@ import mu_ntd.algorithms.Sparse_ntd as SNTD
 from mu_ntd.algorithms.utils import sparsify, tucker_fms
 import pandas as pd
 import sys
-from mu_ntd.algorithms.sinkhorn import scale_factors_fro
+#from mu_ntd.algorithms.sinkhorn import scale_factors_fro
+from tensorly.solvers.penalizations import scale_factors_fro
 import json
 import time
 
@@ -73,9 +74,13 @@ def script_run(**cfg):
     tucker_true.normalize()
     # generate noise according to input SNR
     Ttrue = tucker_true.to_tensor()
-    N = rng.rand(cfg["U_line"], cfg["V_line"], cfg["W_line"])  # 1e-2
-    sigma = 10 ** (-cfg["SNR"] / 20) * np.linalg.norm(Ttrue) / np.linalg.norm(N)
-    T = Ttrue + sigma * N
+    #N = rng.rand(cfg["U_line"], cfg["V_line"], cfg["W_line"])  # 1e-2
+    #sigma = 10 ** (-cfg["SNR"] / 20) * np.linalg.norm(Ttrue) / np.linalg.norm(N)
+    #T = Ttrue + sigma * N
+    # Poisson noise
+    sigma = np.mean(10 ** (2*cfg["SNR"]/20)/np.mean(Ttrue))
+    T = rng.poisson(lam=sigma*Ttrue,size=(cfg["U_line"], cfg["V_line"], cfg["W_line"]))
+    T = T/tl.norm(T)
 
     # Random initialization for the NTD
     rng2 = np.random.RandomState(cfg["seed_init"] + hash("sNTD") % (2**32))
@@ -90,7 +95,7 @@ def script_run(**cfg):
     # Initialization scaling (optimized for l2 loss)
     if cfg["init_scale"]:
         tensor_init, rescale = scale_factors_fro(
-            tensor_init, T, l1weights, l2weights, format_tensor="tucker"
+            tensor_init, T, l1weights, l2weights, format_tensor="tucker", nonnegative=True
         )
         print(f"Initialization rescaled: {rescale}")
 
@@ -159,8 +164,6 @@ def script_run(**cfg):
     spcore_true = tl.sum(tucker_true[0] > tol) / np.prod(cfg["ranks_est"])
     comp_mode0 = tl.sum(tl.sum(out_tucker[0]>tol,axis=(1,2))>10*tol)
 
-    print(out_tucker[0])
-
     # Post-processing errors/FMS
     fms_score, perms = tucker_fms((core, factors), (core_0, factors_0))
     print(f"fms {fms_score, perms}")
@@ -182,45 +185,50 @@ name_read = "Results/" + name_store
 df = pd.read_pickle(name_read)
 import plotly.express as px
 import shootout.methods.post_processors as pp
+import plotly.io as pio
+import template_plot
+# template usage
+pio.templates.default= "plotly_white+my_template"
+pio.kaleido.scope.mathjax = None  # stupid bug
 
 # small tweaks to variables to adjust ranks #TODO adjust variables
 # del variables[]
 ovars = list(variables.keys())
-# Convergence Plots
-df_conv_it = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
-)
-df_conv_time = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars
-)  # , err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
+## Convergence Plots
+#df_conv_it = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
+#)
+#df_conv_time = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars
+#)  # , err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
 # df_conv_sparse = pp.df_to_convergence_df(df, err_name="sparsity_core", other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
 
-# Making plots
-fig = px.line(
-    df_conv_it,
-    x="timings",
-    #x = "it",
-    y="errors",
-    color="scale",
-    facet_col="weight",
-    log_y=True,
-    template="plotly_white",
-    line_group="groups",
-    facet_row="xp",
-    title=name_store,
-)
-# fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
-# core sparsity
-# fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
-# smaller linewidth
-fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
-# fig2.update_traces(
-#    selector=dict(),
-#    line_width=3,
-#    error_y_thickness = 0.3
-# )
-fig.update_xaxes(matches=None)
-fig.update_xaxes(showticklabels=True)
+## Making plots
+#fig = px.line(
+    #df_conv_it,
+    #x="timings",
+    ##x = "it",
+    #y="errors",
+    #color="scale",
+    #facet_col="weight",
+    #log_y=True,
+    #template="plotly_white",
+    #line_group="groups",
+    #facet_row="xp",
+    #title=name_store,
+#)
+## fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
+## core sparsity
+## fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
+## smaller linewidth
+#fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
+## fig2.update_traces(
+##    selector=dict(),
+##    line_width=3,
+##    error_y_thickness = 0.3
+## )
+#fig.update_xaxes(matches=None)
+#fig.update_xaxes(showticklabels=True)
 
 # final error wrt sparsity
 fig4 = px.box(
@@ -241,13 +249,23 @@ fig6.update_xaxes(type="category")
 
 fig7 = px.box(df, x="weight", y="core_component_count_mode0", color="scale", log_x=True)
 fig7.update_xaxes(type='category')
+fig7.update_layout(
+    yaxis=dict(title_text="nonzero components on first mode"),
+    )
 
-fig.show()
-# fig2.show()
-# fig3.show()
+# time
+for fi in [fig4,fig5,fig6,fig7]:
+    fi.update_layout(
+        xaxis=dict(title_text="Regularization parameter"),
+        legend=dict(title_text="balancing")
+    )
+    
 fig4.show()
 fig5.show()
 fig6.show()
 fig7.show()
 
-# time
+fig4.write_image("Results/"+name_store+"_loss.pdf")
+fig5.write_image("Results/"+name_store+"_sparsity_core.pdf")
+fig6.write_image("Results/"+name_store+"_fms.pdf")
+fig7.write_image("Results/"+name_store+"_components.pdf")

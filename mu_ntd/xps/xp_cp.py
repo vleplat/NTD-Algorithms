@@ -112,18 +112,20 @@ def script_run(**cfg):
     if cfg["init_scale"]:
         # Note: In Gretsi, unbalanced updates also have no init rescaling
         # Quite unfair, it should be compared from the same rescaled init
-        tensor_init, rescale = scale_factors_fro(tensor_init, T, l1weights, l2weights)
+        tensor_init, rescale = scale_factors_fro(tensor_init, T, l1weights, l2weights, nonnegative=True)
         print(f"Initialization rescaled: {rescale}")
 
     # callback
     TOC_CP = []
+    cost_fct_vals = []
     def time_tracer(cp_tensor,error):
         TOC_CP.append(time.perf_counter())
+        cost_fct_vals.append(error)
 
     # Call of solvers
     # ### Beta = 1 - MU no extrapolation no acceleration
     if cfg["loss"] == "kl":
-        out_cp, cost_fct_vals, toc, alpha, inner_cnt, sparsity = SNCP.sncp_mu(
+        out_cp, toc, cost_fct_vals, alpha, inner_cnt, sparsity = SNCP.sncp_mu(
             T,
             cfg["rank"],
             l2weights=l2weights,
@@ -134,8 +136,8 @@ def script_run(**cfg):
             tol=cfg["tol"],
             beta=cfg["beta"],
             fixed_modes=[],
+            return_errors=True,
             verbose=cfg["verbose_run"],
-            return_costs=True,
             iter_inner=cfg["iter_inner"],
             accelerate=cfg["accelerate"],
             opt_rescale=scale_bool,
@@ -144,7 +146,7 @@ def script_run(**cfg):
         )
 
     elif cfg["loss"] == "frobenius":      
-        out_cp, cost_fct_vals, _ = non_negative_parafac_hals(
+        out_cp = non_negative_parafac_hals(
             T,
             cfg["rank_est"],
             n_iter_max=cfg["n_iter_max"],
@@ -154,17 +156,13 @@ def script_run(**cfg):
             ridge_coefficients=l2weights,
             verbose=cfg["verbose_run"],
             normalize_factors=False,
-            return_errors=True,
-            exact=False,
             inner_iter_max=cfg["iter_inner"],
             epsilon=cfg["epsilon"],
             rescale=scale_bool,
             print_it=10,
             callback=time_tracer
         )
-        # TODO REQ TIME, callback implem
-        toc = [TOC_CP[i]-TOC_CP[0] for i in range(1,len(TOC_CP))]#[i for i in range(len(cost_fct_vals))]  # its for now
-        # sparsity = [[0]]
+        toc = [TOC_CP[i]-TOC_CP[0] for i in range(1,len(TOC_CP))]
 
     # Post-processing errors/FMS
     fms_score = fms(out_cp, cp_true)
@@ -193,43 +191,47 @@ name_read = "Results/" + name_store
 df = pd.read_pickle(name_read)
 import plotly.express as px
 import shootout.methods.post_processors as pp
+import plotly.io as pio
+import template_plot
+# template usage
+pio.templates.default= "plotly_white+my_template"
 
 ovars = list(variables.keys())
 # Convergence Plots
-df_conv_it = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
-)
-df_conv_time = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars
-)  # , err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
+#df_conv_it = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
+#)
+#df_conv_time = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars
+#)  # , err_name="errors_interp", time_name="timings_interp", max_time=np.Inf)
 # df_conv_sparse = pp.df_to_convergence_df(df, err_name="sparsity_core", other_names=ovars,groups=True,groups_names=ovars, max_time=np.Inf)
 
-# Making plots
-fig = px.line(
-    df_conv_it,
-    x="it",
-    #x="timings",
-    y="errors",
-    color="scale",
-    facet_col="weight",
-    facet_row="xp",
-    log_y=True,
-    template="plotly_white",
-    line_group="groups",
-    title=name_store,
-)
-# fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
-# core sparsity
-# fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
-# smaller linewidth
-fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
-# fig2.update_traces(
-#    selector=dict(),
-#    line_width=3,
-#    error_y_thickness = 0.3
-# )
-fig.update_xaxes(matches=None)
-fig.update_xaxes(showticklabels=True)
+## Making plots
+#fig = px.line(
+    #df_conv_it,
+    #x="it",
+    ##x="timings",
+    #y="errors",
+    #color="scale",
+    #facet_col="weight",
+    #facet_row="xp",
+    #log_y=True,
+    #template="plotly_white",
+    #line_group="groups",
+    #title=name_store,
+#)
+## fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
+## core sparsity
+## fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
+## smaller linewidth
+#fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
+## fig2.update_traces(
+##    selector=dict(),
+##    line_width=3,
+##    error_y_thickness = 0.3
+## )
+#fig.update_xaxes(matches=None)
+#fig.update_xaxes(showticklabels=True)
 
 # final error wrt sparsity
 fig4 = px.box(
@@ -252,12 +254,21 @@ fig6.update_xaxes(type="category")
 fig7 = px.box(df, x="weight", y="component_count", color="scale", log_x=True, facet_row="xp")
 fig7.update_xaxes(type="category")
 
-fig.show()
-# fig2.show()
-# fig3.show()
+
+# time
+for fi in [fig4,fig6,fig7]:
+    fi.update_layout(
+        xaxis=dict(title_text="Regularization parameter"),
+        legend=dict(title_text="balancing")
+    )
+
+
 fig4.show()
-#fig5.show()
 fig6.show()
 fig7.show()
 
-# time
+fig4.write_image("Results/"+name_store+"_loss.pdf")
+fig6.write_image("Results/"+name_store+"_fms.pdf")
+fig7.write_image("Results/"+name_store+"_components.pdf")
+
+

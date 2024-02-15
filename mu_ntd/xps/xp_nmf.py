@@ -21,9 +21,6 @@ import json
 from tensorly.solvers.penalizations import scale_factors_fro
 from tlviz.factor_tools import factor_match_score as fms
 
-# TODO:
-# Debug rescale l2, seems to have an offset
-
 # custom toolbox
 # import shootout as sho
 from shootout.methods.runners import run_and_track
@@ -35,8 +32,6 @@ if not nb_seeds:
     skip = True
 
 # Import Configuration
-#file = open("./config/nmf_Fro.json")
-#name_store = "xp_scale_nmf_Fro_dummy"
 file = open("./config/nmf_KL.json")
 name_store = "xp_nmf_paper"
 
@@ -86,9 +81,18 @@ def script_run(**cfg):
     cp_true = tl.cp_tensor.CPTensor((None, factors_0))  # CP tensor
     cp_true.normalize()
     Ttrue = cp_true.to_tensor()
-    N = rng.rand(cfg["U_line"], cfg["V_line"])  # 1e-2
-    sigma = 10 ** (-cfg["SNR"] / 20) * np.linalg.norm(Ttrue) / np.linalg.norm(N)
-    T = Ttrue + sigma * N
+    # Gaussian Noise
+    #N = rng.rand(cfg["U_line"], cfg["V_line"])  # 1e-2
+    #sigma = 10 ** (-cfg["SNR"] / 20) * np.linalg.norm(Ttrue) / np.linalg.norm(N)
+    #T = Ttrue + sigma * N
+    # Poisson noise
+    sigma = np.mean(10 ** (2*cfg["SNR"]/20)/np.mean(Ttrue))
+    #print(sigma)
+    T = rng.poisson(lam=sigma*Ttrue,size=(cfg["U_line"], cfg["V_line"]))
+    T = T/tl.norm(T)
+    #print(T)
+    
+    #print(Ttrue[:2,:2],T[:2,:2])
 
     # Random initialization for the NCPD
     rng2 = np.random.RandomState(cfg["seed_init"] + hash("sNTD") % (2**32))
@@ -124,12 +128,11 @@ def script_run(**cfg):
     if cfg["scale"]=="init_only":
         scale_bool = False
 
-    # Initialization scaling --> breaks code ... TODO fix?
     tensor_init = tl.cp_tensor.CPTensor((None, factors_init))
     if cfg["init_scale"]:
         # Note: In Gretsi, unbalanced updates also have no init rescaling
         # Quite unfair, it should be compared from the same rescaled init
-        tensor_init, rescale = scale_factors_fro(tensor_init, T, l1weights, l2weights)
+        tensor_init, rescale = scale_factors_fro(tensor_init, T, l1weights, l2weights, nonnegative=True)
         print(f"Initialization rescaled: {rescale}")
 
     # callback
@@ -165,7 +168,6 @@ def script_run(**cfg):
             init="custom",
             factors_0=tensor_init[1],
             n_iter_max=cfg["n_iter_max"],
-            tol=cfg["tol"],
             beta=cfg["beta"],
             fixed_modes=[],
             verbose=cfg["verbose_run"],
@@ -204,16 +206,19 @@ def script_run(**cfg):
     spfac_H = tl.sum(out_cp[1][1] > tol)/(cfg["V_line"]*cfg["rank_est"])
     spfac_true = tl.sum(cp_true[1][0] > tol)/(cfg["U_line"]*cfg["rank_est"])
     # fms
-    fms_score = fms(out_cp, cp_true)
+    out_cp.normalize()
+    cp_true.normalize()
+    fms_score = fms(cp_true, out_cp, consider_weights=False)
+    print(fms_score)
+    #print(out_cp[0][1])
 
     # Tracking low-rank things
-    #out_cp.normalize()
     #print(out_cp[0])
     #Xhat = out_cp.to_tensor()
     #_,s,_ = np.linalg.svd(Xhat)
     #print(s[:6])
-    #print(out_cp[1][0].T@out_cp[1][0])
-    #print(out_cp[1][1].T@out_cp[1][1])
+    #print(cp_true[1][0].T@out_cp[1][0])
+    #print(cp_true[1][1].T@out_cp[1][1])
 
     return {
         "errors": cost_fct_vals,
@@ -231,45 +236,48 @@ def script_run(**cfg):
         "weights": out_cp[0], # to scout for pruned components
     }
 
-
 # Plotting
 name_read = "Results/" + name_store
 df = pd.read_pickle(name_read)
 import plotly.express as px
 import shootout.methods.post_processors as pp
+import plotly.io as pio
+import template_plot
+# template usage
+pio.templates.default= "plotly_white+my_template"
 
 ovars = list(variables.keys())
 # Convergence Plots
-df_conv_it = pp.df_to_convergence_df(
-    df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
-)
+#df_conv_it = pp.df_to_convergence_df(
+    #df, other_names=ovars, groups=True, groups_names=ovars, max_time=np.Inf
+#)
 
 # Making plots
-fig = px.line(
-    df_conv_it,
-    #x="it",
-    x="timings",
-    y="errors",
-    color="scale",
-    facet_col="weight",
-    facet_row="xp",
-    log_y=True,
-    template="plotly_white",
-    line_group="groups",
-    title=name_store,
-)
-# fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
-# core sparsity
-# fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
-# smaller linewidth
-fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
-# fig2.update_traces(
-#    selector=dict(),
-#    line_width=3,
-#    error_y_thickness = 0.3
-# )
-fig.update_xaxes(matches=None)
-fig.update_xaxes(showticklabels=True)
+#fig = px.line(
+    #df_conv_it,
+    ##x="it",
+    #x="timings",
+    #y="errors",
+    #color="scale",
+    #facet_col="weight",
+    #facet_row="xp",
+    #log_y=True,
+    #template="plotly_white",
+    #line_group="groups",
+    #title=name_store,
+#)
+## fig2 = px.line(df_conv_time, x="timings", color="scale", facet_col="weight", y="errors", log_y=True, template="plotly_white", line_group="groups")
+## core sparsity
+## fig3 = px.line(df_conv_sparse, x="it", color="scale", facet_col="weight", y="sparsity_core", log_y=True, template="plotly_white", line_group="groups")
+## smaller linewidth
+#fig.update_traces(selector=dict(), line_width=3, error_y_thickness=0.3)
+## fig2.update_traces(
+##    selector=dict(),
+##    line_width=3,
+##    error_y_thickness = 0.3
+## )
+#fig.update_xaxes(matches=None)
+#fig.update_xaxes(showticklabels=True)
 
 # final error wrt sparsity
 fig4 = px.box(
@@ -286,19 +294,36 @@ fig4.update_xaxes(type="category")
 fig5 = px.box(df, x="weight", y="sparsity", color="scale", facet_row="xp", log_x=True)
 fig5.update_xaxes(type="category")
 
-fig6 = px.box(df, x="weight", y="sparsity_H", color="scale", facet_row="xp", log_x=True)
-fig6.update_xaxes(type="category")
+#fig6 = px.box(df, x="weight", y="sparsity_H", color="scale", facet_row="xp", log_x=True)
+#fig6.update_xaxes(type="category")
 
 fig7 = px.box(df, x="weight", y="fms", color="scale", log_x=True, facet_row="xp")
 fig7.update_xaxes(type="category")
 
-#fig7 = px.box(df, x="weight", y="ratio_sp", color="scale", log_x=True, facet_row="xp")
-#fig7.update_xaxes(type="category")
+fig6 = px.box(df, x="weight", y="ratio_sp", color="scale", log_x=True, facet_row="xp")
+fig6.update_xaxes(type="category")
+fig6.update_layout(
+    yaxis1=dict(title_text="sparsity ratio"),
+    yaxis2=dict(title_text="sparsity ratio")
+    )
 
-fig.show()
+for fi in [fig4,fig5,fig6,fig7]:
+    fi.for_each_annotation(lambda a: a.update(text=a.text.replace("xp=sparse", "$\\lambda_W=\\lambda_H$")))
+    fi.for_each_annotation(lambda a: a.update(text=a.text.replace("xp=indiv_sparse", "$\\lambda_W=1$")))
+    fi.update_layout(
+        xaxis=dict(title_text="Regularization parameter"),
+        legend=dict(title_text="balancing")
+    )
+
+# fig.show()
 # fig2.show()
 # fig3.show()
 fig4.show()
+fig7.show()
 fig5.show()
 fig6.show()
-fig7.show()
+
+fig4.write_image("Results/"+name_store+"_loss.pdf")
+fig7.write_image("Results/"+name_store+"_fms.pdf")
+fig5.write_image("Results/"+name_store+"_sparsity.pdf")
+fig6.write_image("Results/"+name_store+"_sparsity_W_over_H.pdf")
