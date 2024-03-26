@@ -1,4 +1,4 @@
-# Regularized scale-invariant low-rank approximation problems
+# Algorithms for Regularized Nonnegative Scale-invariant Low-rank Approximation Models
 This project concerns the development of a full framework to derive efficient algorithms to compute a regularized low-rank approximation of a given
 input (nonnegative) matrix or tensor ![\Large \mathcal{X}\in](https://latex.codecogs.com/svg.latex?\Large&space;\mathcal{X}\in) 
 ![\large \mathbb{R}_+^{I_1\times...I_N}](https://latex.codecogs.com/svg.latex?\large&space;\mathbb{R}_+^{I_1\times...I_N}).
